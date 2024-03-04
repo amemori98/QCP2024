@@ -1,42 +1,86 @@
 import numpy as np
+from simulator import Matrix
 
 
-class Gates(object):
+class State(object):
+  """
+  A class to represent a quantum register.
+
+  ...
+  
+  Attributes
+  ------------
+  n : int
+    number of qubits 
+  N : int 
+    number of states 
+  state : list
+    state of the register 
+  
+  Methods
+  -----------
+  apply_hadamard
+  apply_phase_shift
+  apply_cnot
+  apply_controlled_v
+  measure 
+
+  
+  """
 
   def __init__(self, n):
-    self.n = n
-    self.state = np.zeros(2**self.n, dtype=complex)
-    self.state[0] = 1  #not sure why this is set to 1?
+    """
+    construct the quantum register 
+    """
+    self.n = n  # number of qubits
+    self.N = 2**n  # number of states
+    self.state = np.zeros(
+        2**self.n,
+        dtype=complex)  # state vector of size 2^n, initialized to |0>
+    self.state[0] = 1  # initial state is |0>
 
-  # Apply Harmard gate to given qubit
+  def apply_gate(self, gate, qubit):
+    #apply the gate to the given qubit and update the state
+
+    #need identity to act on qubits no of interest - implement own identity method?
+    #count how many identities needed then tensor 2x2s 
+    Il = np.eye(2**qubit)
+    Ir = np.eye(2**(self.n - qubit - gate.shape[0]**0.5))
+    
+
+    transformation = Il * gate * Ir
+    self.state = 
+
+  # Apply Hadamard gate to given qubit
   def apply_hadamard(self, qubit):
-    H = np.array([[1, 1], [1, -1]])
     x = 1 / np.sqrt(2)
-    hada = np.multiply(H, x)
-    hadamard = np.multiply(hada, qubit)
-    return hadamard
+    H = Matrix(np.array([[x * 1, x * 1], [x * 1, -x * 1]]))
+    apply_gate(H, i)
+    #self.state = H.tensor()  #apply gate to qubit (tensor product)
 
   # Apply phase shift to given qubit
   def apply_phase_shift(self, phi, qubit):
-    phase = np.array([1, 0], [0, np.exp(1j * phi)])
-    phase_shift = np.multiply(phase, qubit)
+    phase = Matrix(np.array([1, 0], [0, np.exp(1j * phi)]))
+    self.state = phase.tensor()
     return phase_shift
 
   # Apply CNOT to given qubit
   def apply_cnot(self, control, target):
     target = control  # target become copy of control
+    cnot = Matrix(
+      np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1], [0, 0, 1, 0]]))
     return control, target  #  return both target and control
 
   # Apply controlled_v to given qubit
   def apply_controlled_v(self, qubit):
-    V = np.array([[1, 0], [0, 1j]])
-    controlled_v = np.multiply(V, qubit)
+    V = Matrix(np.array([[1, 0], [0, 1j]]))
+    controlled_v = np.matmul(V, qubit)
     return controlled_v
 
   # Not_gate takes one state to the other
   def not_gate(self, qubit):
     not_gate = np.array([[0, 1], [1, 0]])
-    not_qubit = np.multiply(not_gate, qubit)
+    not_qubit = np.matmul(not_gate, qubit)
     return not_qubit
 
   # EPR pair
@@ -51,7 +95,5 @@ class Gates(object):
     return (
         f'There are {self.n} qubits, the state of the register is {self.state}'
     )
-
-  #def apply_gate(self, ): #reduced repetition in gate functions
 
   #def measure(self):
