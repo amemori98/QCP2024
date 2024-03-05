@@ -1,5 +1,5 @@
 import numpy as np
-from simulator import Matrix
+from simulator import Matrix, SparseMatrix
 
 
 class State(object):
@@ -42,21 +42,40 @@ class State(object):
   def apply_gate(self, gate, qubit):
     #apply the gate to the given qubit and update the state
 
-    #need identity to act on qubits no of interest - implement own identity method?
-    #count how many identities needed then tensor 2x2s 
-    Il = np.eye(2**qubit)
-    Ir = np.eye(2**(self.n - qubit - gate.shape[0]**0.5))
-    
+    #count how many identities needed then tensor 2x2s
+    #Il = np.eye(2**qubit)
+    #Ir = np.eye(2**(self.n - qubit - gate.shape[0]**0.5))
+    identity = Matrix(np.array([[1, 0], [0, 1]]))
 
-    transformation = Il * gate * Ir
-    self.state = 
+    Il = identity
+    for i in range(2**qubit):
+      Il = Il % identity  #working on1 this (alex)
 
-  # Apply Hadamard gate to given qubit
+    Ir = identity
+    for i in range(2**(self.n - qubit - int(gate.rows**0.5))):
+      Ir = Ir % identity
+
+    t = Il % gate % Ir
+    self.state = t % self.state
+
+  # Apply hadamard gates to all qubits
+  def apply_hadamard_all(self):
+    x = 1 / np.sqrt(2)
+    H = Matrix(np.array([[x * 1, x * 1], [x * 1, -x * 1]]))
+
+    t = H
+    for i in range(0, self.n):
+      t = t % H
+    print(t)
+
+    self.state = t % self.state
+    print(self.state)
+
+  # Apply Hadamard gate to a qubit
   def apply_hadamard(self, qubit):
     x = 1 / np.sqrt(2)
     H = Matrix(np.array([[x * 1, x * 1], [x * 1, -x * 1]]))
-    apply_gate(H, i)
-    #self.state = H.tensor()  #apply gate to qubit (tensor product)
+    self.apply_gate(H, qubit)
 
   # Apply phase shift to given qubit
   def apply_phase_shift(self, phi, qubit):
@@ -68,7 +87,7 @@ class State(object):
   def apply_cnot(self, control, target):
     target = control  # target become copy of control
     cnot = Matrix(
-      np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1], [0, 0, 1, 0]]))
+        np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1], [0, 0, 1, 0]]))
     return control, target  #  return both target and control
 
   # Apply controlled_v to given qubit
