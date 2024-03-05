@@ -3,25 +3,29 @@
 
 from gates import State
 
+
 #Grover's algorithm
 def grovers_algorithm(n_qubits):
-  
-  #set up intial state
-  psi = State(n_qubits)
 
-  #apply hadamard gate to each qubit simultaneously
-  psi.apply_hadamard_all()
+    #set up intial state
+    psi = State(n_qubits)
 
-  #apply the oracle
+    #apply hadamard gate to each qubit simultaneously
+    psi.apply_hadamard_all()
 
-  #apply the diffusion
+    #apply the oracle
 
-  #measure
+    #apply the diffusion
+
+    #measure
+
 
 #test
 #psi = State(2)  #initialise 2 qubit register
 #print(psi)  #print initial state
 #grovers_algorithm(2)
 
-#psi = State(2)
-#psi.apply_hadamard(1)
+psi = State(2)
+print(psi)
+psi.apply_hadamard_all()
+print(psi.state)

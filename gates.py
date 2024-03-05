@@ -24,7 +24,6 @@ class State(object):
   apply_cnot
   apply_controlled_v
   measure 
-
   
   """
 
@@ -33,11 +32,13 @@ class State(object):
     construct the quantum register 
     """
     self.n = n  # number of qubits
-    self.N = 2**n  # number of states
+    self.N = 2**n  # number of basis states
     self.state = np.zeros(
-        2**self.n,
+        (self.N, 1),
         dtype=complex)  # state vector of size 2^n, initialized to |0>
     self.state[0] = 1  # initial state is |0>
+    self.state = Matrix(
+        self.state)  #needs to be matrix object to use tensor product
 
   def apply_gate(self, gate, qubit):
     #apply the gate to the given qubit and update the state
@@ -49,7 +50,7 @@ class State(object):
 
     Il = identity
     for i in range(2**qubit):
-      Il = Il % identity  #working on1 this (alex)
+      Il = Il % identity  #working on this (alex)
 
     Ir = identity
     for i in range(2**(self.n - qubit - int(gate.rows**0.5))):
@@ -64,12 +65,10 @@ class State(object):
     H = Matrix(np.array([[x * 1, x * 1], [x * 1, -x * 1]]))
 
     t = H
-    for i in range(0, self.n):
+    for i in range(0, self.n - 1):
       t = t % H
-    print(t)
 
     self.state = t % self.state
-    print(self.state)
 
   # Apply Hadamard gate to a qubit
   def apply_hadamard(self, qubit):
