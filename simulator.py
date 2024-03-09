@@ -20,7 +20,7 @@ class Matrix(object):
         Matrix multiplication of 2 matrices
         """
         assert (self.cols == other.rows), "Can only multiply 2 matrices of dimensions (m,n) and (n,p)"
-        multiply = np.zeros((self.rows, other.cols),dtype=complex)
+        multiply = np.zeros((self.rows, other.cols), dtype=complex)
         for i in range(self.rows):
             for j in range(other.cols):
                 for k in range(other.rows):
@@ -47,6 +47,29 @@ class Matrix(object):
         """
         assert (self.rows == other.rows and self.cols == other.cols), "Matrix dimensions do not match"
         return Matrix(self.matrix + other.matrix)
+
+    def __sub__(self,other):
+        """
+        Subtract two matrices. This is needed to ensure that matrices added together are of the same dimension.
+        """
+        assert (self.rows == other.rows and self.cols == other.cols), "Matrix dimensions do not match"
+        return Matrix(self.matrix - other.matrix)
+
+    def transpose(self):
+        """
+        Transpose a matrix
+        """
+        zero = np.zeros((self.cols, self.rows), dtype=complex)
+        for i in range(self.rows):
+            for j in range(self.cols):
+                zero[i,j] = self.matrix[j,i]
+        return Matrix(zero)    
+
+    def scalar(self, scale):
+        """
+        Multiply a matrix by a scalar
+        """
+        return Matrix(self.matrix * scale)
     
     def __str__(self):
         return str(self.matrix)
@@ -62,12 +85,13 @@ class SparseRep(object):
         self.cols = cols
 
 class Sparse(object):
+    # data type issue with numpy
     """
     2D sparse matrix class with entries of type complex
     """
     def __init__(self, array):
         """
-        Sparse(np.ndarray) -> Converts the array into a sparse matrix. Elements of the matrix are stores in an array whose elements are in the following format [Matrix element, row, column]. Row and column are zero indexed.
+        Sparse(np.ndarray) -> Converts the array into a sparse matrix. Elements of the matrix are stores in an array whose elements are in the following format [Matrix element] [row, column]. Row and column are zero indexed.
 
         Sparse(SparseRep) -> Converts the sparse representation into a sparse matrix. This is used to distinguish between converting an array containing a matrix and an array containing a sparse representation of a matrix [Matrix element, row, column).
 
@@ -102,11 +126,20 @@ class Sparse(object):
             self.rows = array.rows
             self.cols = array.cols
         self.shape = np.array((self.rows, self.cols))
+
+    def scalar(self, scale):
+        """
+        Multiplies the matrix by a scalar
+        """
+        self.elements[:,0] = self.elements[:,0] * scale
+        return self
     
     def __mul__(self, other):
+        # add multiplication with scalar
         """
         Matrix multiplication of two sparse matrices
         """
+        
         assert (self.cols == other.rows), "Can only multiply 2 matrices of dimensions (m,n) and (n,p)"
         multiply = []
         # loop through all the elements and mutiply the ones that are in the same row and column
@@ -148,7 +181,27 @@ class Sparse(object):
                 elements[ind][0] += add[k][0]
         elements = np.array(elements)
         return Sparse(SparseRep(elements, self.rows, self.cols))
-    
+
+    def __sub__(self, other):
+        """
+        Subtract two sparse matrices
+        """
+        assert (self.rows == other.rows and self.cols == other.cols), "Matrix dimensions do not match"
+        add = []
+        add.extend(self.elements.tolist())
+        add.extend(other.elements.tolist())
+        elements = []
+        unique = []
+        for k in range(len(add)):
+            if add[k][1:] not in unique:
+                unique.append(add[k][1:])
+                elements.append(add[k])
+            else:
+                ind = unique.index(add[k][1:])
+                elements[ind][0] -= add[k][0]
+        elements = np.array(elements)
+        return Sparse(SparseRep(elements, self.rows, self.cols))
+
     def __mod__(self, other):
         """
         Kronecker product of two sparse matrices
@@ -159,14 +212,29 @@ class Sparse(object):
                 kronecker.append([i[0] * j[0], i[1]*other.rows + j[1], i[2]*other.cols + j[2]])
         kronecker = np.array(kronecker)
         return Sparse(SparseRep(kronecker, self.rows*other.rows, self.cols*other.cols))
+
+    def transpose(self):
+        """
+        Transpose of a sparse matrix
+        """
+        transpose = []
+        for i in self.elements:
+            transpose.append([i[0], i[2], i[1]])
+        transpose = np.array(transpose)
+        return Sparse(SparseRep(transpose, self.cols, self.rows))
     
     def __str__(self):
         matrix = np.zeros((self.rows, self.cols))
         for i in self.elements:
+            print(i[1])
+            print(i[2])
             matrix[i[1], i[2]] = i[0]
         return str(matrix)
 
-
+    # add transpose method
+    # add subtract method
+#class programmer(object):
+    
 
 
 #testing
@@ -179,6 +247,13 @@ b = np.array([[5, 1, 2],
 a = Sparse(a)
 b = Sparse(b)
 print(a+b)
+
+
+c = Sparse(np.array([[3,2]]))
+d = Sparse(np.array([[5,1],[7,4]]))
+print(d % c) 
+
+print(a.scalar(2)) # not working 
 
 """
 We can use something similar to this code, to test the performance of the sparse matrix class against the dense matrix class. 

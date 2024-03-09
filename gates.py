@@ -1,36 +1,37 @@
 import numpy as np
-from simulator import Matrix, SparseMatrix
+from simulator import Matrix, Sparse
 
 
 class State(object):
   """
-  A class to represent a quantum register.
+		A class to represent a quantum register.
 
-  ...
-  
-  Attributes
-  ------------
-  n : int
-    number of qubits 
-  N : int 
-    number of states 
-  state : list
-    state of the register 
-  
-  Methods
-  -----------
-  apply_hadamard
-  apply_phase_shift
-  apply_cnot
-  apply_controlled_v
-  measure 
-  
-  """
+		...
+	
+		Attributes
+		------------
+		n : int
+				number of qubits 
+		N : int 
+				number of states 
+		state : list
+				state of the register 
+	
+		Methods
+		-----------
+		apply_hadamard
+		apply_phase_shift
+		apply_cnot
+		apply_controlled_v
+		measure 
+	
+		"""
 
   def __init__(self, n):
     """
-    construct the quantum register 
-    """
+				construct the quantum register 
+				"""
+    # we need to add a method to show a the state of a specific qubit (Jordi)
     self.n = n  # number of qubits
     self.N = 2**n  # number of basis states
     self.state = np.zeros(
@@ -38,42 +39,43 @@ class State(object):
         dtype=complex)  # state vector of size 2^n, initialized to |0>
     self.state[0] = 1  # initial state is |0>
     self.state = Matrix(
-        self.state)  #needs to be matrix object to use tensor product
+        self.state)  # needs to be matrix object to use tensor product
 
-  def apply_gate(self, gate, qubit):
+  def apply_gate(self, gate, qubit):  #working on this (alex)
     #apply the gate to the given qubit and update the state
 
-    #count how many identities needed then tensor 2x2s
-    #Il = np.eye(2**qubit)
-    #Ir = np.eye(2**(self.n - qubit - gate.shape[0]**0.5))
-    identity = Matrix(np.array([[1, 0], [0, 1]]))
+    #count how many qubits either side of one to apply gate to
+    nl = qubit  #make identity matrix of this dimension
+    Il = [[0] * nl for _ in range(nl)]
+    for i in range(nl):
+      Il[i][i] = 1
+    Il = Matrix(np.array(Il))  #won't work with empty array
 
-    Il = identity
-    for i in range(2**qubit):
-      Il = Il % identity  #working on this (alex)
+    nr = self.n - qubit  #make identity matrix of this dimension
+    Ir = [[0] * nr for _ in range(nr)]
+    for i in range(nr):
+      Ir[i][i] = 1
+    Ir = Matrix(np.array(Ir))
 
-    Ir = identity
-    for i in range(2**(self.n - qubit - int(gate.rows**0.5))):
-      Ir = Ir % identity
-
+    print(Il)
+    print(Ir)
     t = Il % gate % Ir
-    self.state = t % self.state
+
+    self.state = t * self.state  #matrix multiplication
 
   # Apply hadamard gates to all qubits
   def apply_hadamard_all(self):
-    x = 1 / np.sqrt(2)
-    H = Matrix(np.array([[x * 1, x * 1], [x * 1, -x * 1]]))
+    H = Matrix((1 / np.sqrt(2)) * np.array([[1., 1.], [1., -1.]]))
 
     t = H
     for i in range(0, self.n - 1):
       t = t % H
 
-    self.state = t % self.state
+    self.state = t * self.state
 
   # Apply Hadamard gate to a qubit
   def apply_hadamard(self, qubit):
-    x = 1 / np.sqrt(2)
-    H = Matrix(np.array([[x * 1, x * 1], [x * 1, -x * 1]]))
+    H = Matrix((1 / np.sqrt(2)) * np.array([[1., 1.], [1., -1.]]))
     self.apply_gate(H, qubit)
 
   # Apply phase shift to given qubit
