@@ -144,12 +144,12 @@ def grovers_algorithm_3():
 
 #grovers_algorithm_3() # works for 2 qubit system (hardcoded without state class) and using MATRIX class not Sparse
 
+# -------------------------------------------------------------------------------------
 
 # general Grover's algorithm for n qubit quantum register
 # uses the functions defined below (a state function, nxn matrix gate function, and a apply gate function) NOT the state class
-# need to fix it up a bit, put it into a function... (Elena)
 
-# have also noticed that for a 3 qubit system it doesnt seem to work well... with the target state having less amplitude!
+# have also noticed that for a 3-qubit system it doesn't seem to work well... with the final state having less amplitude in the target state than all the rest so maybe we should increase the no of iterations the oracle and diffuser are applied to the 3-qubit system!
 
 def state(n, m):
 		"""
@@ -174,7 +174,7 @@ def nxn_matrix_gate(matrix_gate, n):
 		gate_n = matrix_gate
 
 		for i in range(n-1):
-				gate_n = gate_n%matrix_gate
+						gate_n = gate_n%matrix_gate
 
 		return gate_n
 
@@ -200,39 +200,53 @@ def apply_nxn_gate_to_qr(nxn_gate, matrix_state):
 
 		return matrix_state
 
+# grovers algorithm for n-qubit quantum register
+def general_grovers_algorithm():
 
-H = Matrix((1/np.sqrt(2)) * np.array([[1, 1], [1, -1]]))
+		H = Matrix((1/np.sqrt(2)) * np.array([[1, 1], [1, -1]]))
 
-n = int(input("Enter integer number of qubits for quantum register: "))
-N = 2 ** n  # no of basis states
-N_list = [i for i in range(N)]  # list of possible "state to find" given n qubit register
+		n = int(input("Enter integer number of qubits for quantum register: "))
+		N = 2 ** n  # no of basis states
+		N_list = [i for i in range(N)]  # list of possible "state to find" given n qubit register
 
-target_state_int = int(input(f"Choose the target state you want Grovers algorithm to find (integer in the range {N_list[0]}-{N_list[-1]}): "))
+		target_state_int = int(input(f"Choose the target state you want Grovers algorithm to find (integer in the range {N_list[0]}-{N_list[-1]}): "))
 
-n_q_state = state(n, 0) # initialised to zero
-target_state = state(n, target_state_int) # initialised to target state
+		n_q_state = state(n, 0) # initialised to zero
+		target_state = state(n, target_state_int) # initialised to target state
 
-H_n = nxn_matrix_gate(H, n) # NxN Hadamard gate
+		H_n = nxn_matrix_gate(H, n) # NxN Hadamard gate
 
-# apply H to all qubits in quantum register (puts the n qubit state into a superposition of all its basis states)
-n_q_state = apply_nxn_gate_to_qr(H_n, n_q_state)
+		# apply H to all qubits in quantum register (puts the n qubit state into a superposition of all its basis states)
+		n_q_state = apply_nxn_gate_to_qr(H_n, n_q_state)
 
-I_n = identity(N) # NxN identity Matrix object
+		I_n = identity(N) # NxN identity Matrix object
 
-# apply oracle and diffusion sqrt(N) times
-for i in range(int(np.sqrt(N))): # N = n**2 usually it takes sqrt(N) operations to find target state
-		initial_state = n_q_state # store initial n qubit state
+		# N = n**2 usually it takes sqrt(N) operations to find target state however for the 3-qubit system it
+		# takes N operations to find the target state (or to have a larger final amplitude in the final states)
+		# also notice that for the 1-qubit system it always return equal amplitude for both possible states :/
 
-		# oracle O = I_n - 2|target_state><target_state|
-		O = I_n - (target_state * (target_state.transpose())).scalar(2)
+		if n <= 4:
+				no_of_iterations = int(N)
+		else:
+				no_of_iterations = int(np.sqrt(N))
+		# print(no_of_iterations)
 
-		# apply the oracle to the state (reflecting the state about the axis perpendicular to target state)
-		n_q_state = O * n_q_state
+		# apply oracle and diffusion no_of_iterations times
+		for i in range(no_of_iterations): 
+				initial_state = n_q_state # store initial n qubit state
 
-		# diffuser D = 1 - 2|initial state><initial state| 
-		D = I_n - (initial_state*(initial_state.transpose())).scalar(2)
+				# oracle O = I_n - 2|target_state><target_state|
+				O = I_n - (target_state * (target_state.transpose())).scalar(2)
 
-		# apply the diffuser to the state (reflecting the state about the initial state)
-		n_q_state = D * n_q_state
+				# apply the oracle to the state (reflecting the state about the axis perpendicular to target state)
+				n_q_state = O * n_q_state
 
-print(f"Final state of the quantum register: \n {n_q_state}")
+				# diffuser D = 1 - 2|initial state><initial state| 
+				D = I_n - (initial_state*(initial_state.transpose())).scalar(2)
+
+				# apply the diffuser to the state (reflecting the state about the initial state)
+				n_q_state = D * n_q_state
+
+		print(f"Final state of the quantum register: \n {n_q_state}")
+
+general_grovers_algorithm()
