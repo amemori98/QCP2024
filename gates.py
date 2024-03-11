@@ -15,7 +15,7 @@ class State(object):
 		N : int 
 				number of states 
 		state : list
-				state of the register 
+				current state of the register 
 	
 		Methods
 		-----------
@@ -117,3 +117,51 @@ class State(object):
     )
 
   #def measure(self):
+
+
+#new structure 
+
+def qubit(state):
+  if state==0:
+    return Sparse([1,0])
+
+  elif state==1:
+    return Sparse([0,1])
+      
+  else:
+    print('Error: "state" must be 0 or 1') #error message 
+      
+
+class QCircuit(object):
+  
+  def __init__(self, n):
+
+    self.n = n #number of qubits 
+    self.N = 2**n #size of state space 
+
+    #set up initial state of quantum register (all qubits |0>)
+    self.state = qubit(0) 
+    for i in range(n-1):
+      self.state = self.state % qubit(0)
+
+  
+  #def apply_H(self, *args):
+    """
+    apply hadamard gate to qubits given in argument 
+    """
+
+  
+    
+
+
+    
+
+#global variables 
+
+#gates
+I = Sparse(np.array([[1, 0], [0, 1]]))  #Identity
+H = Sparse((1/np.sqrt(2)) * np.array([[1, 1], [1, -1]]))  #Hadamard
+X = Sparse(np.array([[0, 1], [1, 0]]))  #Pauli X 
+Z = Sparse(np.array([[1, 0], [0, -1]])) #Pauli Z 
+CNOT = Sparse(np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1], [0, 0, 1, 0]])) #Controlled-NOT 
+CZ = Sparse(np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, -1]])) #Controlled-Z

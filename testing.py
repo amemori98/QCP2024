@@ -9,7 +9,7 @@ b = np.array([[5, 1, 2],
       [1, 2, 3]])
 a = Matrix(a)
 b = Matrix(b)
-print(a+b)
+#print(a+b)
 
 """
 We can use something similar to this code, to test the performance of the sparse matrix class against the dense matrix class. 

@@ -60,11 +60,11 @@ class Matrix(object):
         Transpose a matrix
         """
         zero = np.zeros((self.cols, self.rows), dtype=complex)
-        for i in range(self.rows):
-            for j in range(self.cols):
+        for i in range(self.cols):
+            for j in range(self.rows):
                 zero[i,j] = self.matrix[j,i]
-        return Matrix(zero)    
-
+        return Matrix(zero)
+		
     def scalar(self, scale):
         """
         Multiply a matrix by a scalar
@@ -238,6 +238,7 @@ class Sparse(object):
 
 
 #testing
+"""
 a = np.array([[3, 2, 1], 
       [0, 0, 0], 
       [0, 3, 4]])
@@ -254,7 +255,7 @@ d = Sparse(np.array([[5,1],[7,4]]))
 print(d % c) 
 
 print(a.scalar(2)) # not working 
-
+"""
 """
 We can use something similar to this code, to test the performance of the sparse matrix class against the dense matrix class. 
 Could be useful to include in the report and something to talk about during the presentation. For 16x16 matrices, the performance of the sparse matrix class is around 26x faster than the dense matrix class. We would have to test this on different size matrices and see how much the performance difference is. Also have to test the kronecker product.
