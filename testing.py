@@ -1,15 +1,16 @@
 from simulator import *
 
 #testing
-a = np.array([[3, 2, 1], 
-      [0, 0, 0], 
-      [0, 3, 4]])
-b = np.array([[5, 1, 2], 
-      [7, 4, 7],
-      [1, 2, 3]])
-a = Matrix(a)
-b = Matrix(b)
-#print(a+b)
+a = np.array([[3, 2, 1], [0, 0, 0], [0, 3, 4]])
+b = np.array([[5, 1, 2], [7, 4, 7], [1, 2, 3]])
+a = Sparse(a)
+b = Sparse(b)
+print(a+b)
+print(a%b)
+print(a.scalar(2))
+print(a.transpose())
+print(a-b)
+print(a*b)
 
 """
 We can use something similar to this code, to test the performance of the sparse matrix class against the dense matrix class. 
