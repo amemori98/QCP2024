@@ -1,22 +1,55 @@
 #use simulator to implement classes of matrices etc. -> simulator interface should be completely separate
 
+# MATRIX abstract base class with DENSE and SPARSE child classes, SPARSEREP is a helper class 
+
+from abc import ABC, abstractmethod
 import numpy as np
-import time  # to check performance, no point using sparse if its slower than normal matrix
-import scipy  # for generating random sparse matrices, testing purposes
+import math
+import time # to check performance, no point using sparse if its slower than normal matrix
+import scipy # for generating random sparse matrices, testing purposes
 
+class Matrix(ABC):
+    @abstractmethod
+    def __add__(self, other):
+        pass
+    
+    @abstractmethod
+    def __sub__(self, other):
+        pass
+    
+    @abstractmethod
+    def __mul__(self, other):
+        pass
+    
+    @abstractmethod
+    def __mod__(self, other):
+        pass
+    
+    @abstractmethod
+    def __str__(self):
+        pass
+    
+    @abstractmethod
+    def transpose(self):
+        pass
+    
+    @abstractmethod
+    def scalar(self, scale):
+        pass
 
-class Matrix(object):
+class Dense(Matrix):
     """
     Class for initial testing of the quantum computer simulator. 
     Also used for testing the performance of the sparse matrix class
     """
 
-    def __init__(self, array):
+    def __init__(self, array, id=""):
         """
         Converts a 2D np.ndarray into a matrix object.
         """
         self.matrix = array
         self.rows, self.cols = array.shape
+        self.id = id
 
     def __mul__(self, other):
         """
@@ -29,7 +62,7 @@ class Matrix(object):
             for j in range(other.cols):
                 for k in range(other.rows):
                     multiply[i, j] += self.matrix[i, k] * other.matrix[k, j]
-        return Matrix(multiply)
+        return Dense(multiply)
 
     def __mod__(self, other):
         """
@@ -45,7 +78,7 @@ class Matrix(object):
                         tensor[i * other.rows + k, j * other.cols +
                                l] = self.matrix[i, j] * other.matrix[k, l]
 
-        return Matrix(tensor)
+        return Dense(tensor)
 
     def __add__(self, other):
         """
@@ -53,7 +86,7 @@ class Matrix(object):
         """
         assert (self.rows == other.rows
                 and self.cols == other.cols), "Matrix dimensions do not match"
-        return Matrix(self.matrix + other.matrix)
+        return Dense(self.matrix + other.matrix)
 
     def __sub__(self, other):
         """
@@ -61,7 +94,7 @@ class Matrix(object):
         """
         assert (self.rows == other.rows
                 and self.cols == other.cols), "Matrix dimensions do not match"
-        return Matrix(self.matrix - other.matrix)
+        return Dense(self.matrix - other.matrix)
 
     def transpose(self):
         """
@@ -71,13 +104,13 @@ class Matrix(object):
         for i in range(self.cols):
             for j in range(self.rows):
                 zero[i, j] = self.matrix[j, i]
-        return Matrix(zero)
+        return Dense(zero)
 
     def scalar(self, scale):
         """
         Multiply a matrix by a scalar
         """
-        return Matrix(self.matrix * scale)
+        return Dense(self.matrix * scale)
 
     def __str__(self):
         return str(self.matrix)
@@ -96,22 +129,26 @@ class SparseRep(object):
         self.cols = cols
 
 
-class Sparse(object):
-    # data type issue with numpy
+class Sparse(Matrix):
     """
     2D sparse matrix class with entries of type complex
     """
 
-    def __init__(self, array):
+    def __init__(self, array, id=""):
         """
-        Sparse(np.ndarray) -> Converts the array into a sparse matrix. Elements of the matrix are stores in an array whose elements are in the following format [Matrix element] [row, column]. Row and column are zero indexed.
+        Sparse(np.ndarray) -> Converts the array into a sparse matrix. 
+        Elements of the matrix are stored in an array whose elements are in the following format [Matrix element] [row, column]. 
+        Row and column are zero indexed.
 
-        Sparse(SparseRep) -> Converts the sparse representation into a sparse matrix. This is used to distinguish between converting an array containing a matrix and an array containing a sparse representation of a matrix [Matrix element, row, column).
+        Sparse(SparseRep) -> Converts the sparse representation into a sparse matrix. 
+        This is used to distinguish between converting an array containing a matrix and an array containing a sparse representation of a matrix [Matrix element, row, column).
 
         Sparse(Matrix) -> Converts a dense matrix into a sparse matrix.
         The rows and columns attributes refer to the maximum rows and columns of the matrix. 
+
+        id argument is the string identifier of the matrix. It is used to print circuit diagrams using the programmer class. It is a string of max length 3
         """
-        assert isinstance(array, (np.ndarray, SparseRep, Matrix)), "Can only convert an array, SparseRep or Matrix classes"
+        assert isinstance(array, (np.ndarray, SparseRep, Dense)), "Can only convert an array, SparseRep or Matrix classes"
 
         # converts array to sparse matrix
         if isinstance(array, np.ndarray):
@@ -126,8 +163,8 @@ class Sparse(object):
             self.elements = np.array(elements, dtype = complex)
             self.indices = np.array(indices, dtype = int)
 
-        # converts Matrix to sparse matrix
-        elif isinstance(array, Matrix):
+        # converts Dense to sparse matrix
+        elif isinstance(array, Dense):
             self.rows, self.cols = array.rows, array.cols
             elements = []
             indices = []
@@ -245,7 +282,7 @@ class Sparse(object):
                 
         kronecker = np.array(kronecker)
         indices = np.array(indices)
-        return Sparse(SparseRep(kronecker, indices, self.rows * other.rows,self.cols * other.cols))
+        return Sparse(SparseRep(kronecker, indices, self.rows * other.rows, self.cols * other.cols))
 
     def transpose(self):
         """
@@ -266,49 +303,125 @@ class Sparse(object):
 
 
 
-#class programmer(object):
+class programmer(object):
+    # might have to redesign to be able to implement cnot and cv
+    def __init__(self, register):
+        self.initial = register
+        # finds number of qubits based on rows of the register
+        rows = register.rows
+        self.qubit_count = 0
+        while True:
+            rows = rows/2
+            self.qubit_count += 1
+            # stops if it reaches 1
+            if rows == 1:
+                break
+            # raises exception to invalid register
+            if rows < 1:
+                raise Exception("Invalid register size, must have 2^n rows")
+        self.steps = []
+        # dictionary to know how to print each gate
+        self.gates_dict = {H:"H ",I:"I ",X:"X ",Z:"Z ",CNOT:"C0",CZ:"CZ"}
+        
+    def add_step(self, gates):
+        assert len(gates) == self.qubit_count, "Number of gates does not match number of qubits"
+        self.steps.append(gates)
+        print(self)
+        return self
+        
+    def remove_step(self, step_number):
+        self.steps.remove(self.steps[step_number])
+        print(self)
+        return self
 
-#testing
-"""
-a = np.array([[3, 2, 1], 
-      [0, 0, 0], 
-      [0, 3, 4]])
-b = np.array([[5, 1, 2], 
-      [7, 4, 7],
-      [1, 2, 3]])
-a = Sparse(a)
-b = Sparse(b)
-print(a+b)
+    def __str__(self):
+        assert len(self.steps)>0,"Must have at least one step"
+        print(len(self.steps))
+        buffer = ""
+        for i in range(self.qubit_count):
+            buffer = buffer + "q"+str(i)+" -> "
+            for j in range(len(self.steps)):
+                buffer = buffer + self.gates_dict[self.steps[j][i]] + " "
+            buffer = buffer + "\n"
+        return buffer
+
+def state(n, m):
+    # fixed so it properly initializes the register and uses Sparse
+    """
+        Nx1 Matrix state of the quantum register initialised to state corresponding to qubit m
+    """
+    assert isinstance(m,int), "The number of qubits n inputted must be an integer"
+    assert isinstance(n,int), "The qubit to which quantum register is intialised m must be an integer"
+    assert (m >= 0 and m < 2**n), "m must be between 0 and 2^n"
+
+    # initialise register to all zeros
+    state = np.zeros((2**n, 1), dtype=complex)
+
+    # initialize to state |m>
+    state[m] = 1
+
+    return Sparse(state)
+
+# global gates
+I = Sparse(np.array([[1, 0], [0, 1]]),id = "I")  #Identity
+H = Sparse((1/np.sqrt(2)) * np.array([[1, 1], [1, -1]]), id = "H")  #Hadamard
+X = Sparse(np.array([[0, 1], [1, 0]]), id = "X")  #Pauli X 
+Y = Sparse(np.array([[0, -1j], [1j, 0]]), id = "Y") #Pauli Y
+Z = Sparse(np.array([[1, 0], [0, -1]]), id = "Z") #Pauli Z 
 
 
-c = Sparse(np.array([[3,2]]))
-d = Sparse(np.array([[5,1],[7,4]]))
-print(d % c) 
+def CNOT(qubit_count, control, target):
+    """
+    Returns an appropriate CNOT gate for the given qubit count, control and target qubits as a Sparse matrix.
+    Control and Target qubits are zero-indexed.
+    """
+    assert qubit_count > 1, "CNOT gate can only be applied to 2 or more qubits"
+    assert isinstance(qubit_count, int), "Qubit count must be an integer"
+    assert isinstance(control, int), "Control qubit must be an integer"
+    assert isinstance(target, int),"Target qubit must be an integer"
+    
+    # initializes an zero array
+    gate = np.zeros((2**qubit_count, 2**qubit_count), dtype=complex)
+    for i in range(2**qubit_count):
+        gate[i,i] = 1
 
-print(a.scalar(2)) # not working 
-"""
-"""
-We can use something similar to this code, to test the performance of the sparse matrix class against the dense matrix class. 
-Could be useful to include in the report and something to talk about during the presentation. For 16x16 matrices, the performance of the sparse matrix class is around 26x faster than the dense matrix class. We would have to test this on different size matrices and see how much the performance difference is. Also have to test the kronecker product.
+    
+    row_spacing = 2**control
+    column_spacing = 2**target
+    # finds which rows to swap
+    control_rows = []
 
-c = scipy.sparse.random(16,16,density=0.1).toarray()
-d = scipy.sparse.random(16,16,density=0.1).toarray()
-csparse = Sparse(c)
-dsparse = Sparse(d)
-t1 = time.time()
-test = csparse*dsparse
-t2 = time.time()
-t3 = t2-t1
-print("sparse", t3)
+    for i in range(2**(qubit_count-control)):
+        print("i=",i)
+        if i%2==1:
+            for j in range(row_spacing):
+                control_rows.append(i*row_spacing+j)
+                print("j=",j)
+                print(control_rows)
 
-cdense = Matrix(c)
-ddense = Matrix(d)
-t4 = time.time()
-test = cdense*ddense
-t5 = time.time()
-t6 = t5-t4
-print("dense", t6)
+    # finds the pairs of rows to swap
+    unique = []
+    buffer = []
+    for row in control_rows:
+        if row not in buffer:
+            unique.append([row, row + column_spacing])
+            buffer.append(row + column_spacing)
 
-print("Sparse is", t6/t3, "times faster")
+    print("unique=",unique)
+    print("buffer=",buffer)
+    # YAAYAYAYAYAYA IT WOOOOORKS, MY GOD I SPENT WAY TOO LONG ON THIS
+    # et the matrix to the correct values based on the unique list
+    for each in unique:
+        gate[each[0]] = 0
+        gate[each[0], each[1]] = 1
+        gate[each[1]] = 0
+        gate[each[1], each[0]] = 1
+        
+    return Sparse(gate)
 
-"""
+print(CNOT(3,1,0))
+print(CNOT(4,3,1))
+print(H%I%H)
+q = programmer(state(4,2))
+q.add_step([H,H,H,H])
+q.add_step([H,Z,X,I])
