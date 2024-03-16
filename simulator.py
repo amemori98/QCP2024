@@ -369,59 +369,75 @@ X = Sparse(np.array([[0, 1], [1, 0]]), id = "X")  #Pauli X
 Y = Sparse(np.array([[0, -1j], [1j, 0]]), id = "Y") #Pauli Y
 Z = Sparse(np.array([[1, 0], [0, -1]]), id = "Z") #Pauli Z 
 
+def CNOT(qubit_count, control_list, target_list):
+    """
+    Returns an appropriate CNOT-Type gate for the given qubit count, control and target qubits as a Sparse matrix.
+    This gate flips all the target qubits, if all the control qubits are |1>
+    Control and Target qubits are zero-indexed and are to be inputted as lists of integers.
 
-def CNOT(qubit_count, control, target):
+    Example:
+    To construct a Toffoli gate for a 3 qubit register, we require 2 control qubits and 1 target qubit.
+    Toffoli = CNOT(3, [0,1], [2])
     """
-    Returns an appropriate CNOT gate for the given qubit count, control and target qubits as a Sparse matrix.
-    Control and Target qubits are zero-indexed.
-    """
-    assert qubit_count > 1, "CNOT gate can only be applied to 2 or more qubits"
+    assert qubit_count >= (len(control_list) + len(target_list)), "Number of qubits must be greater than or equal to the number of control and target qubits"
     assert isinstance(qubit_count, int), "Qubit count must be an integer"
-    assert isinstance(control, int), "Control qubit must be an integer"
-    assert isinstance(target, int),"Target qubit must be an integer"
-    
-    # initializes an zero array
+    assert isinstance(control_list, list), "Control qubits must be provided as a list"
+    assert isinstance(target_list, list), "Target qubits must be provided as a list"
+    for control in control_list:
+        assert isinstance(control, int), "One or more control qubits is not an integer"
+    for target in target_list:
+        assert isinstance(target, int), "One or more target qubits is not an integer
+
+    # initializes a zero array
     gate = np.zeros((2**qubit_count, 2**qubit_count), dtype=complex)
-    for i in range(2**qubit_count):
-        gate[i,i] = 1
 
+    # initializes a list to store the indices of the rows
+    rows = np.arange(0,2**qubit_count,1)
     
-    row_spacing = 2**control
-    column_spacing = 2**target
-    # finds which rows to swap
-    control_rows = []
+    # converts the indices to binary
+    bin_rows = []
+    for row in rows:
+        bin_rows.append(bin(row)[2:].zfill(qubit_count))
 
-    for i in range(2**(qubit_count-control)):
-        print("i=",i)
-        if i%2==1:
-            for j in range(row_spacing):
-                control_rows.append(i*row_spacing+j)
-                print("j=",j)
-                print(control_rows)
+    # initializes a list to store the swapped binary indices
+    bin_swapped_rows = []
 
-    # finds the pairs of rows to swap
-    unique = []
-    buffer = []
-    for row in control_rows:
-        if row not in buffer:
-            unique.append([row, row + column_spacing])
-            buffer.append(row + column_spacing)
+    # flips bits in the binary representation of the row indices according to the required CNOT-Type Gate
+    for binary in bin_rows:
+        counter = 0
+        for i in range(len(control_list)):
+            if binary[qubit_count - control_list[i] - 1] == "1":
+                counter += 1
+        if counter == len(control_list):
+            for j in range(len(target_list)):
+                if binary[qubit_count - target_list[j] - 1] == "1":    
+                    buffer = list(binary)
+                    buffer[qubit_count - target_list[j] - 1] = "0"
+                    binary = "".join(buffer)
+                else:
+                    buffer = list(binary)
+                    buffer[qubit_count - target_list[j] - 1] = "1"
+                    binary = "".join(buffer)  
+        bin_swapped_rows.append(binary)
 
-    print("unique=",unique)
-    print("buffer=",buffer)
-    # YAAYAYAYAYAYA IT WOOOOORKS, MY GOD I SPENT WAY TOO LONG ON THIS
-    # et the matrix to the correct values based on the unique list
-    for each in unique:
-        gate[each[0]] = 0
-        gate[each[0], each[1]] = 1
-        gate[each[1]] = 0
-        gate[each[1], each[0]] = 1
+    # initializes a list to store the swapped integer indices
+    swapped_rows = []
+    
+    # converts the binary representation of the row indices back to decima
+    for binary in bin_swapped_rows:
+        swapped_rows.append(int(binary,2))
+
+    # sets the appropriate ones in the gate
+    for i in range(len(swapped_rows)):
+        gate[rows[i], swapped_rows[i]] = 1
         
     return Sparse(gate)
+#print(CNOT(3,1,0))
+#print(CNOT(4,3,1))
+#print(H%I%H)
 
-print(CNOT(3,1,0))
-print(CNOT(4,3,1))
-print(H%I%H)
+wikipedia_toff = TOFF(4,[0,2],[1])
+print(wikipedia_toff)
 q = programmer(state(4,2))
 q.add_step([H,H,H,H])
 q.add_step([H,Z,X,I])
