@@ -1,20 +1,12 @@
 I made it very non technical to kinda see the structure, feel free to make it more technical or even start making it. The State class is already started.
 
-
-class State: \\might be better to make the class be for a single qubit, then we can use interface for multiple
-	initialize:
-		qbits 
-		hadamard_matrix
-		phase_matrix
-		cnot_matrix
-    
-    tensor_product \\need our own matrix methods - not allowed to use libraries?<- Yeah I am pretty sure we can't but can use numpy, we can use numpy but not methods from it liek the dot product iirc
-    
-		
-	apply_hadamard:  \\we need to implement a way of choosing which qubit to apply the gates to.
-	apply_phase:
-	apply_cnot:
-	...
+checklist and things to implement (Jordi):
+    Shors
+    documentation on existing classes(WIP)
+    X add T and S gates
+    x add adjoint methods for matrices
+    work on shors part of report and performance testing
+    need to combine all code in 1 file
 
 class lazy:  \\not entirely sure how this would tie in with the rest
 	makes a function lazy  \\maybe not needed, sparse matrix class might already be lazy

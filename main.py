@@ -83,8 +83,7 @@ def apply_nxn_gate_to_qr(nxn_gate, matrix_state):
 def measure(state):
     """
     Does a single measurement of the quantum state (collapses state) and plots result  
-    """
-    #Convert state to a list
+    """    #Convert state to a list
     state = list(state.matrix) 
 
     # Calculate the probabilities of each outcome based on the quantum state
@@ -144,6 +143,7 @@ def general_grovers_algorithm():
     # also notice that for the 1-qubit system it always return equal amplitude for both possible states :/
 
     no_of_iterations = int(N) if n == 3 else int(np.sqrt(N))
+    
     # oracle O = I_n - 2|target_state><target_state|
     O = I_n - (target_state * (target_state.transpose())).scalar(2)
     
