@@ -5,6 +5,34 @@ import time
 import scipy
 #testing
 
+# Testing the performance of Dense vs Sparse Matrix class
+
+# matrix multiplication and tensor product of NxN matrices
+
+time_sparse = np.empty([0], dtype=float)
+time_dense = np.empty([0], dtype=float)
+
+for N in np.arange(20, 101, 20):
+
+    a = scipy.sparse.random(N, N, density=0.1).toarray() # can modify to test density
+    b = scipy.sparse.random(N, N, density=0.1).toarray()
+    asparse = Sparse(a)
+    bsparse = Sparse(b)
+    t1 = time.time()
+    test = asparse*bsparse # can change this to test the tensor product
+    t2 = time.time()
+    t3 = t2-t1
+    time_sparse = np.append(time_sparse, [t3])
+
+    adense = Dense(a)
+    bdense = Dense(b)
+    t4 = time.time()
+    test = adense*bdense
+    t5 = time.time()
+    t6 = t5-t4
+    time_dense = np.append(time_dense, [t6])
+
+
 
 
 """
@@ -25,23 +53,4 @@ print(a.adjoint().id)
 We can use something similar to this code, to test the performance of the sparse matrix class against the dense matrix class. 
 Could be useful to include in the report and something to talk about during the presentation. For 16x16 matrices, the performance of the sparse matrix class is around 26x faster than the dense matrix class. We would have to test this on different size matrices and see how much the performance difference is. Also have to test the kronecker product.
 """
-# c = scipy.sparse.random(128,128,density=0.1).toarray()
-# d = scipy.sparse.random(128,128,density=0.1).toarray()
-# csparse = Sparse(c)
-# dsparse = Sparse(d)
-# t1 = time.time()
-# test = csparse*dsparse
-# t2 = time.time()
-# t3 = t2-t1
-# print("sparse", t3)
-
-# cdense = Dense(c)
-# ddense = Dense(d)
-# t4 = time.time()
-# test = cdense*ddense
-# t5 = time.time()
-# t6 = t5-t4
-# print("dense", t6)
-
-# print("Sparse is", t6/t3, "times faster")
 

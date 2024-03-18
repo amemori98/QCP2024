@@ -356,11 +356,11 @@ def state(n, m):
     return Dense(state)
 
 # global gates
-I = Dense(np.array([[1, 0], [0, 1]]),id = "I")  #Identity
-H = Dense((1/np.sqrt(2)) * np.array([[1, 1], [1, -1]]), id = "H")  #Hadamard
-X = Dense(np.array([[0, 1], [1, 0]]), id = "X")  #Pauli X 
-Y = Dense(np.array([[0, -1j], [1j, 0]]), id = "Y") #Pauli Y
-Z = Dense(np.array([[1, 0], [0, -1]]), id = "Z") #Pauli Z 
+I = Dense(np.array([[1, 0], [0, 1]]),id = "I")  # Identity
+H = Dense((1/np.sqrt(2)) * np.array([[1, 1], [1, -1]]), id = "H")  # Hadamard
+X = Dense(np.array([[0, 1], [1, 0]]), id = "X")  # Pauli X 
+Y = Dense(np.array([[0, -1j], [1j, 0]]), id = "Y") # Pauli Y
+Z = Dense(np.array([[1, 0], [0, -1]]), id = "Z") # Pauli Z 
 
 def phaseshift(theta, id = ""):
     return Dense(np.array([[1, 0], [0, np.exp(1j*theta)]]))

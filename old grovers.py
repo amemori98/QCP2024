@@ -1,4 +1,7 @@
 from simulator import Sparse, SparseRep, Dense, state, H
+from main import measure
+
+import time
 
 # grovers algorithm for n-qubit quantum register
 def general_grovers_algorithm():
