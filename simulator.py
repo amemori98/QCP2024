@@ -1,5 +1,3 @@
-#use simulator to implement classes of matrices etc. -> simulator interface should be completely separate
-
 # MATRIX abstract base class with DENSE and SPARSE child classes, SPARSEREP is a helper class 
 
 from abc import ABC, abstractmethod
@@ -49,12 +47,23 @@ class Dense(Matrix):
 
     def __init__(self, array, id = ""):
         """
-        Converts a 2D np.ndarray into a matrix object.
+        Converts a 2D np.ndarray or a Sparse matrix into a dense matrix object.
         """
-        self.matrix = array
-        self.rows, self.cols = array.shape
-        self.id = id
 
+        if isinstance(array,Sparse):
+            matrix = np.zeros((array.rows, array.cols), dtype = complex)
+            for i in range(len(array.elements)):
+                matrix[array.indices[i,0],array.indices[i,1]] = array.elements[i]
+            self.matrix = matrix
+            self.rows, self.cols = array.shape
+            self.id = id
+        elif isinstance(array,np.ndarray):
+            self.matrix = array
+            self.rows, self.cols = array.shape
+            self.id = id
+        else:
+            raise Exception("Input must be a np.ndarray or a Sparse matrix")
+            
     def __mul__(self, other, id = ""):
         """
         Matrix multiplication of 2 matrices.
@@ -200,6 +209,7 @@ class Sparse(Matrix):
             self.cols = array.cols
         self.shape = np.array((self.rows, self.cols))
         self.id = id
+        
     def scalar(self, scale):
         """
         Multiplies the matrix by a scalar
@@ -212,7 +222,6 @@ class Sparse(Matrix):
         """
         Matrix multiplication of two sparse matrices
         """
-
         assert (self.cols == other.rows), "Can only multiply 2 matrices of dimensions (m,n) and (n,p)"
         multiply = []
         m_indices = []
@@ -244,21 +253,17 @@ class Sparse(Matrix):
         Add two sparse matrices
         """
         assert (self.rows == other.rows and self.cols == other.cols), "Matrix dimensions do not match"
-        add = []
-        add.extend(self.elements.tolist())
-        add.extend(other.elements.tolist())
-        a_indices = []
-        a_indices.extend(self.indices.tolist())
-        a_indices.extend(other.indices.tolist())
-        elements = []
-        unique = []
-        for k in range(len(add)):
-            if a_indices[k] not in unique:
-                unique.append(a_indices[k])
-                elements.append(add[k])
+        elements = self.elements.tolist()
+        unique = self.indices.tolist()
+        other_indices = other.indices.tolist()
+
+        for i in range(len(other.elements)):
+            if other_indices[i] in unique:
+                ind = unique.index(other_indices[i])
+                elements[ind] += other.elements[i]
             else:
-                ind = unique.index(a_indices[k])
-                elements[ind] += add[k]
+                elements.append(other.elements[i])
+                unique.append(other_indices[i])
         elements = np.array(elements)
         unique = np.array(unique)
         return Sparse(SparseRep(elements, unique, self.rows, self.cols))
@@ -338,8 +343,8 @@ def state(n, m):
     """
         Nx1 Matrix state of the quantum register initialised to state corresponding to qubit m
     """
-    assert isinstance(m,int), "The number of qubits n inputted must be an integer"
-    assert isinstance(n,int), "The qubit to which quantum register is intialised m must be an integer"
+    assert isinstance(m, int), "The number of qubits n inputted must be an integer"
+    assert isinstance(n, int), "The qubit to which quantum register is intialised m must be an integer"
     assert (m >= 0 and m < 2**n), "m must be between 0 and 2^n"
 
     # initialise register to all zeros
@@ -348,17 +353,17 @@ def state(n, m):
     # initialize to state |m>
     state[m] = 1
 
-    return Sparse(state)
+    return Dense(state)
 
 # global gates
-I = Sparse(np.array([[1, 0], [0, 1]]),id = "I")  #Identity
-H = Sparse((1/np.sqrt(2)) * np.array([[1, 1], [1, -1]]), id = "H")  #Hadamard
-X = Sparse(np.array([[0, 1], [1, 0]]), id = "X")  #Pauli X 
-Y = Sparse(np.array([[0, -1j], [1j, 0]]), id = "Y") #Pauli Y
-Z = Sparse(np.array([[1, 0], [0, -1]]), id = "Z") #Pauli Z 
+I = Dense(np.array([[1, 0], [0, 1]]),id = "I")  #Identity
+H = Dense((1/np.sqrt(2)) * np.array([[1, 1], [1, -1]]), id = "H")  #Hadamard
+X = Dense(np.array([[0, 1], [1, 0]]), id = "X")  #Pauli X 
+Y = Dense(np.array([[0, -1j], [1j, 0]]), id = "Y") #Pauli Y
+Z = Dense(np.array([[1, 0], [0, -1]]), id = "Z") #Pauli Z 
 
 def phaseshift(theta, id = ""):
-    return Sparse(np.array([[1, 0], [0, np.exp(1j*theta)]]))
+    return Dense(np.array([[1, 0], [0, np.exp(1j*theta)]]))
 
 T = phaseshift(np.pi/4, id = "T")
 S = phaseshift(np.pi/2, id = "S")
@@ -428,10 +433,10 @@ def CNOT(qubit_count, control_list, target_list, id = ""):
     for i in range(len(swapped_rows)):
         gate[rows[i], swapped_rows[i]] = 1
         
-    return Sparse(gate,id)
+    return Dense(gate,id)
 
 
-class programmer(object):
+class Programmer(object):
     """
     Class used to program a quantum circuit. Quantum circut can also be named using the optional argument "name" when initializing the programmer.
     Can visualize the circuit by running print() on the object. Supports visualization of 1 qubit gates only. n-qubit gates can only be visualized by the user assigned id given to the gate.
@@ -568,16 +573,16 @@ class programmer(object):
         return buffer
 
 # SIIICK IT WORKS I THINK
-wikipedia_toff = CNOT(4,[0,2],[1], id = "Toffoli")
-#print(wikipedia_toff)
-q = programmer(state(3,0), name = "Grovers")
-q.add_step([H,H,H])
-# searching for qubit 2
-Oracle = I%I%I - (state(3,2) * (state(3,2).transpose()).scalar(2))
-Oracle.id = "Oracle"
-q.add_step([Oracle])
-print(q)
-q.compile()
-q.run()
-print(q.get_matrix())
-print(q.output)
+# wikipedia_toff = CNOT(4,[0,2],[1], id = "Toffoli")
+# #print(wikipedia_toff)
+# q = Programmer(state(3,0), name = "Grovers")
+# q.add_step([H,H,H])
+# # searching for qubit 2
+# Oracle = I%I%I - (state(3,2) * (state(3,2).transpose()).scalar(2))
+# Oracle.id = "Oracle"
+# q.add_step([Oracle])
+# print(q)
+# q.compile()
+# q.run()
+# print(q.get_matrix())
+# print(q.output)

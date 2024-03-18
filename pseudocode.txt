@@ -1,3 +1,98 @@
+PSEUDOCODE for Matrix and Programmer classes
+
+# Define Matrix abstract base class with Dense and Sparse child classes, and SparseRep helper class
+class Matrix:
+    abstract method __add__(self, other)
+    abstract method __sub__(self, other)
+    abstract method __mul__(self, other)
+    abstract method __mod__(self, other)
+    abstract method scalar(self, scale)
+    abstract method transpose(self)
+    abstract method __str__(self)
+
+class Dense(Matrix):
+    method __init__(self, array)
+    method __mul__(self, other)
+    method __mod__(self, other)
+    method __add__(self, other)
+    method __sub__(self, other)
+    method scalar(self, scale)
+    method transpose(self)
+    method __str__(self)
+
+class SparseRep:
+    method __init__(self, elements, indices, rows, cols)
+
+class Sparse(Matrix):
+    method __init__(self, array)
+    method __mul__(self, other)
+    method __add__(self, other)
+    method __sub__(self, other)
+    method __mod__(self, other)
+    method scalar(self, scale)
+    method transpose(self)
+    method __str__(self)
+
+# Define functions related to quantum operations
+function state(n, m)
+    assert n is int, "The number of qubits n inputted must be an integer"
+    assert m is int, "The qubit to which quantum register is initialized m must be an integer"
+    assert m >= 0 and m < 2**n, "m must be between 0 and 2^n"
+    state = array of size 2**n initialized with zeros
+    set state[m] = 1
+    return Sparse(state)
+
+function nxn_matrix_gate(matrix_gate, n)
+    assert matrix_gate is Dense or Sparse, "The gate inputted must be a Matrix object"
+    assert n is int, "The number of qubits n inputted must be an integer"
+    gate_n = matrix_gate
+    repeat n-1 times:
+        gate_n = gate_n
+    return gate_n
+
+function identity(N)
+    I = NxN matrix initialized with zeros
+    for i from 0 to N-1:
+        set I[i, i] = 1
+    return Dense(I)
+
+function apply_nxn_gate_to_qr(nxn_gate, matrix_state)
+    assert matrix_state is Dense or Sparse, "The state inputted must be a Matrix object"
+    assert nxn_gate is Dense or Sparse, "The gate inputted must be an NxN Matrix object"
+    matrix_state = nxn_gate * matrix_state
+    return matrix_state
+
+function measure(state)
+    convert state to list
+    calculate probabilities of each outcome based on state
+    perform measurement probabilistically
+    prepare measurement outcome
+    plot measurement result
+
+function general_grovers_algorithm()
+    get n from user
+    N = 2**n
+    get target_state_int from user
+    assert target_state_int is in range 0 to N-1
+    initialize n_q_state to state(n, 0)
+    initialize target_state to state(n, target_state_int)
+    H_n = nxn_matrix_gate(H, n)
+    n_q_state = apply_nxn_gate_to_qr(H_n, n_q_state)
+    I_n = identity(N)
+    no_of_iterations = N if n == 3 else sqrt(N)
+    O = I_n - 2 * target_state * target_state.transpose()
+    repeat no_of_iterations times:
+        initial_state = n_q_state
+        n_q_state = O * n_q_state
+        D = I_n - 2 * initial_state * initial_state.transpose()
+        n_q_state = D * n_q_state
+    print final state of quantum register
+
+# Main program
+- Call general_grovers_algorithm() function
+
+
+
 I made it very non technical to kinda see the structure, feel free to make it more technical or even start making it. The State class is already started.
 
 checklist and things to implement (Jordi):

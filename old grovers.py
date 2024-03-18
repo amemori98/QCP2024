@@ -1,132 +1,92 @@
+from simulator import Sparse, SparseRep, Dense, state, H
 
+# grovers algorithm for n-qubit quantum register
+def general_grovers_algorithm():
 
-def grovers_algorithm_2():  #general version will have input for n qubits and selecting target
+    n = int(input("Enter integer number of qubits for quantum register: "))
+    N = 2**n  # no of basis states
+    N_list = [i for i in range(N)
+              ]  # list of possible "state to find" given n qubit register
+
+    target_state_int = int(
+        input(
+            f"Choose the target state you want Grovers algorithm to find (integer in the range {N_list[0]}-{N_list[-1]}): "
+        ))
+    assert (target_state_int in N_list)
+    t1 = time.time()
+    n_q_state = state(n, 0)  # initialised to zero
+    target_state = state(n, target_state_int)  # initialised to target state
+
+    H_n = nxn_matrix_gate(H, n)  # NxN Hadamard gate
+
+    # apply H to all qubits in quantum register (puts the n qubit state into a superposition of all its basis states)
+    n_q_state = apply_nxn_gate_to_qr(H_n, n_q_state)
+
+    I_n = identity(N)  # NxN identity Matrix object
+
+    no_of_iterations = int(np.pi / 4 * np.sqrt(N))
+
+    initial_state = n_q_state  # store initial n qubit state
+
+    # oracle O = I_n - 2|target_state><target_state|
+    O = I_n - (target_state * (target_state.transpose())).scalar(2)
+
+    # apply oracle and diffusion no_of_iterations times
+    for _ in range(no_of_iterations):
+
+        # apply the oracle to state: reflects state about axis perp. to target state
+        n_q_state = O * n_q_state
+
+        # diffuser D = 1 - 2|initial state><initial state|
+        D = I_n - (initial_state * (initial_state.transpose())).scalar(2)
+
+        # apply the diffuser to the state (reflecting the state about the initial state)
+        n_q_state = D * n_q_state
+
+    print(f"Final state of the quantum register: \n {n_q_state}")
+    t2 = time.time()
+    print(t2 - t1)
+    measure(n_q_state)
+
+def nxn_matrix_gate(matrix_gate, n):
     """
-  2 qubit Grover's algorithm, need 3rd qubit (measurement qubit)?
-  Target set to |11> = |3>
-  This skips using the state class (for now) 
-  """
-
-    #basis states
-    zero = Sparse(np.array([[1], [0]]))
-    one = Sparse(np.array([[0], [1]]))
-
-    #gates
-    I = Sparse(np.array([[1, 0], [0, 1]]))  #Identity
-    H = Sparse((1 / np.sqrt(2)) * np.array([[1, 1], [1, -1]]))  #Hadamard
-    X = Sparse(np.array([[0, 1], [1, 0]]))  #Pauli X
-    Z = Sparse(np.array([[1, 0], [0, -1]]))  #Pauli Z
-    CNOT = Sparse(
-        np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1],
-                  [0, 0, 1, 0]]))  #Controlled-NOT
-    CZ = Sparse(
-        np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0],
-                  [0, 0, 0, -1]]))  #Controlled-Z
-
-    #set up initial state
-    state = zero % zero
-
-    #set target to |11>
-    target = one % one
-
-    #apply hadamard gate to all qubits
-    state = (H % H) * state
-
-    #apply oracle and diffusion sqrt(N) times
-    for i in range(int(np.sqrt(2**2))):  #int or round?
-
-        i_state = state  #story initial state
-        print(i_state.cols)
-        print(i_state.elements)
-        print(i_state)
-        #O = CZ  #Oracle O = 1 - 2|11><11| = CZ
-        O = (I % I) - (target * (target.transpose())) - (target *
-                                                         (target.transpose()))
-        state = O * state
-
-        D = (I % I) - (i_state * (i_state.transpose())) - (
-            i_state * (i_state.transpose())
-        )  #Diffuser D = 1 - 2|initial state><initial state|
-
-        state = D * state
-
-    #measure qubits -> should now be in |11> state
-    print(state)
-
-#testing
-#grovers_algorithm_2()
-
-def grovers_algorithm_3():
-    """
-        2 qubit Grover's algorithm, need 3rd qubit (measurement qubit)?
-        Target set to |11> = |3>
-        This skips using the state class (for now) 
+                NxN Matrix gate given a Matrix gate and the number of qubits n
         """
+    assert (type(matrix_gate) == Dense or type(matrix_gate)
+            == Sparse), "The gate inputted must be a Matrix object"
+    assert (
+        type(n) == int), "The number of qubits n inputted must be an integer"
 
-    # basis states
-    zero = Dense(np.array([[1], [0]]))  # MATRIX class
-    one = Dense(np.array([[0], [1]]))
+    gate_n = matrix_gate
 
-    # gates
-    # I = Sparse(np.array([[1, 0], [0, 1]]))  # Identity
-    # H = Sparse((1/np.sqrt(2)) * np.array([[1, 1], [1, -1]]))  # Hadamard
+    for i in range(n - 1):
+        gate_n = gate_n % matrix_gate
 
-    I = Sparse(np.array([[1, 0], [0, 1]]))  # Identity MATRIX class
-    H = Dense((1 / np.sqrt(2)) *
-               np.array([[1, 1], [1, -1]]))  # Hadamard MATRIX class
+    return gate_n
 
-    # not used gates
-    X = Sparse(np.array([[0, 1], [1, 0]]))  # Pauli X
-    Z = Sparse(np.array([[1, 0], [0, -1]]))  # Pauli Z
-    CNOT = Sparse(
-        np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1],
-                  [0, 0, 1, 0]]))  # Controlled-NOT
 
-    CZ = Sparse(
-        np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0],
-                  [0, 0, 0, -1]]))  # Controlled-Z
+def identity(N):
+    """
+                NxN identity Matrix object
+        """
+    I = []
+    for i in range(N):
+        row = [0] * N
+        row[i] = 1
+        I.append(row)
+    return Dense(np.array(I))
 
-    # set up initial state
-    state = zero % zero
-    print("-------------------")
-    print("1: create 2-qubit state")
-    print(state)
 
-    # apply hadamard gate to all qubits
-    state = (H % H) * state
-    print("2: put the state into a superposition of all basis states")
-    print(state)
-    print("-------------------")
+def apply_nxn_gate_to_qr(nxn_gate, matrix_state):
+    # what is the point of this? pretty sure if the types are not right, it will throw an error regardlessww
+    """
+        Applies an NxN gate to a Matrix state
+        """
+    assert (type(matrix_state) == Dense or type(matrix_state)
+            == Sparse), "The state inputted must be a Matrix object"
+    assert (type(nxn_gate) == Dense or type(nxn_gate)
+            == Sparse), "The gate inputted must be an NxN Matrix object"
 
-    # apply oracle and diffusion sqrt(N) times
-    for i in range(int(np.sqrt(2**2))):  # int
-        print("3: index of loop", i)
+    matrix_state = nxn_gate * matrix_state
 
-        i_state = state  # store initial state
-        print("4: store initial state")
-        print(i_state)
-
-        O = CZ  # Oracle O = 1 - 2|11><11| = CZ (need to change so general)
-        print("5: oracle = CZ")
-        print(O)
-
-        state = O * state
-        print("6: apply the oracle to state")
-        print(state)
-
-        D = (I % I) - ((i_state * (i_state.transpose()))).scalar(
-            2
-        )  # Diffuser D = 1 - 2|initial state><initial state|, need Sparse subtraction method, outer product of vectors? -> can possibly build this from basic gates but more confusing
-        print("7: diffuser")
-        print(D)
-
-        state = D * state
-        print("8: apply diffuser to the state")
-        print(state)
-        print("-------------------")
-
-    # measure qubits -> should now be in |11> state --> it IS!
-    print("9: final state |11>")
-    print(state)
-
-#grovers_algorithm_3() # works for 2 qubit system (hardcoded without state class) and using MATRIX class not Sparse
+    return matrix_state
