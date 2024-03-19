@@ -61,26 +61,26 @@ Compile and run the circuit:
 circuit.compile()
 circuit.run()
 ```
-![graph](./docs/measureplot.png) 
+![graph](./measureplot.png) 
 
 Measure the state of the quantum register and plot the resuts:
 ```
 circuit.measure()
 ```
 
-![graph](./docs/visualcircuit.png) 
+![graph](./visualcircuit.png) 
 Print a visualisation of the circuit:
 ```
 print(circuit)
 ```
 
-![graph](./docs/matrixcircuit.png) 
+![graph](./matrixcircuit.png) 
 Print the gates as a matrix:
 ```
 print(circuit.get_matrix())
 ```
 
-![graph](./docs/amplitudes.png) 
+![graph](./amplitudes.png) 
 Print the amplitudes of the quantum register:
 ```
 print(circuit.output)
@@ -89,7 +89,13 @@ print(circuit.output)
 
 
 ## Authors <a name = "authors"></a>
-Alexandra McAdam,
+Jordi Zhang,
 Elena Espinosa,
+Alexandra McAdam,
+Taewoo Lee,
+Kathryn Griggs,
+Matilda Lawton.
+
+
 ...
 
