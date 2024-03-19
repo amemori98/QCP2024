@@ -30,7 +30,7 @@ This program is self contained and uses matplotlib for plotting graphs.
 This program can be used by downloading the file quantumsimulator.py and importing into your file:
 
 ```
-from quantumsimulator import *
+from quantum_simulator import *
 ```
 
 ### How to Use 
@@ -61,31 +61,35 @@ Compile and run the circuit:
 circuit.compile()
 circuit.run()
 ```
-![graph](./measureplot.png) 
+
 
 Measure the state of the quantum register and plot the resuts:
 ```
 circuit.measure()
 ```
+![graph](./measureplot.png) 
 
-![graph](./visualcircuit.png) 
+
 Print a visualisation of the circuit:
 ```
 print(circuit)
 ```
+![graph](./visualcircuit.png) 
 
-![graph](./matrixcircuit.png) 
+
 Print the gates as a matrix:
 ```
 print(circuit.get_matrix())
 ```
+![graph](./matrixcircuit.png) 
 
-![graph](./amplitudes.png) 
+
 Print the amplitudes of the quantum register:
 ```
 print(circuit.output)
 
 ```
+![graph](./amplitudes.png) 
 
 
 ## Authors <a name = "authors"></a>
@@ -96,6 +100,4 @@ Taewoo Lee,
 Kathryn Griggs,
 Matilda Lawton.
 
-
-...
 
