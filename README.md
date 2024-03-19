@@ -18,13 +18,10 @@
 - [Usage ](#usage-)
 - [Authors ](#authors-) -->
 
-<!-- ## About <a name = "about"></a>
-A python progrom to simulate quantum computing on a classical computer. -->
-
 ## Getting Started <a name = "getting_started"></a>
 
 ### Prerequisites
-This program is self contained and uses matplotlib for plotting graphs.
+This program is self contained and uses matplotlib for plotting graphs. 
 
 ### Installing
 This program can be used by downloading the file quantum_simulator.py and importing into your file:
@@ -34,7 +31,7 @@ from quantum_simulator import *
 ```
 
 ### How to Use 
-This section will show you how to use the quantum simulator program through an example.
+This section will show you how to use the quantum simulator program through an example.  
 
 
 Creating a quantum register of 3 qubits, initialised to state 0:
@@ -108,20 +105,35 @@ When adding gates to a circuit use their id to name them. For example the id for
 
 ### Making Your Own Gates
 Functions which make gates:
+
 phaseshift(theta, id) -> returns a 2x2 phaseshift matrix as a Matrix object with given id
+
 identity(N, id) -> returns an NxN identity matrix as a Matrix object with given id
+
 CNOT(qubit_count, control_list, target_list, id) -> returns a CNOT matrix with the given control and target qubits as a Matrix object with given id
 
-To make your own gate:
+To make your own gate use the Matrix 
 
 ### Matrix Algebra 
 You can apply matrix algebra to states and gates. 
 
 These are the available functions:
-* for matrix multiply 
-% for tensor product
-+ for matrix addition
-- for 
+
+Matrix multiplication: use * operator 
+
+Tensor product: use % operator 
+
+Matrix addition: use + operator
+
+Matrix subtraction: use - operator 
+
+Transpose: transpose = matrix.tensor() where matrix is a Matrix object 
+
+Adjoint: adjoint = matrix.adjoint() where matrix is a Matrix object 
+
+Scalar multiplication: matrix.scalar(x) where matrix is a Matrix object, and x is a scalar number 
+
+
 
 ## Authors <a name = "authors"></a>
 Jordi Zhang,
