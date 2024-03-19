@@ -343,7 +343,7 @@ X = Dense(np.array([[0, 1], [1, 0]]), id="X")  #Pauli X
 Y = Dense(np.array([[0, -1j], [1j, 0]]), id="Y")  #Pauli Y
 Z = Dense(np.array([[1, 0], [0, -1]]), id="Z")  #Pauli Z
 
-def identity(N):
+def identity(N, id=""):
     """
     NxN identity Matrix object
     """
@@ -352,10 +352,10 @@ def identity(N):
         row = [0] * N
         row[i] = 1
         I.append(row)
-    return Dense(np.array(I))
+    return Dense(np.array(I), id)
 
 def phaseshift(theta, id=""):
-    return Dense(np.array([[1, 0], [0, np.exp(1j * theta)]]))
+    return Dense(np.array([[1, 0], [0, np.exp(1j * theta)]]), id)
 
 
 T = phaseshift(np.pi / 4, id="T")
