@@ -34,7 +34,7 @@ from quantum_simulator import *
 ```
 
 ### How to Use 
-This section will show you how to the quantum simulator program through an example.
+This section will show you how to use the quantum simulator program through an example.
 
 
 Creating a quantum register of 3 qubits, initialised to state 0:
@@ -91,6 +91,37 @@ print(circuit.output)
 ```
 ![graph](./docs/amplitudes.png) 
 
+
+### Gates Included
+When adding gates to a circuit use their id to name them. For example the id for Hadamard gate id="H" so you use circuit.add_step([H,H,H]).
+
+| Gate Name        | id |
+| ---------------- | -- |
+| Identity         | I  |
+| Hadamard         | H  |
+| Pauli X          | X  |
+| Pauli Y          | Y  |
+| Pauli Z          | Z  |
+| Phase-shift pi/4 | T  |
+| Phase-shift pi/2 | S  |
+
+
+### Making Your Own Gates
+Functions which make gates:
+phaseshift(theta, id) -> returns a 2x2 phaseshift matrix as a Matrix object with given id
+identity(N, id) -> returns an NxN identity matrix as a Matrix object with given id
+CNOT(qubit_count, control_list, target_list, id) -> returns a CNOT matrix with the given control and target qubits as a Matrix object with given id
+
+To make your own gate:
+
+### Matrix Algebra 
+You can apply matrix algebra to states and gates. 
+
+These are the available functions:
+* for matrix multiply 
+% for tensor product
++ for matrix addition
+- for 
 
 ## Authors <a name = "authors"></a>
 Jordi Zhang,
