@@ -1,9 +1,8 @@
-from simulator import Sparse, SparseRep, Dense, state, CNOT, H, X, Y, Z, T, S
-#from main import general_grovers_algorithm
+from quantum_simulator import *
+
 import numpy as np
 import time
 import scipy
-#testing
 
 # Testing the performance of Dense vs Sparse Matrix class
 

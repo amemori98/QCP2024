@@ -1,36 +1,36 @@
-# MATRIX abstract base class with DENSE and SPARSE child classes, SPARSEREP is a helper class 
-
 from abc import ABC, abstractmethod
+from matplotlib import pyplot as plt
+
 import numpy as np
-import math
-import time # to check performance, no point using sparse if its slower than normal matrix
-import scipy # for generating random sparse matrices, testing purposes
+import random
+
 
 class Matrix(ABC):
+
     @abstractmethod
     def __add__(self, other):
         pass
-    
+
     @abstractmethod
     def __sub__(self, other):
         pass
-    
+
     @abstractmethod
     def __mul__(self, other):
         pass
-    
+
     @abstractmethod
     def __mod__(self, other):
         pass
-    
+
     @abstractmethod
     def __str__(self):
         pass
-    
+
     @abstractmethod
     def transpose(self):
         pass
-    
+
     @abstractmethod
     def scalar(self, scale):
         pass
@@ -39,32 +39,33 @@ class Matrix(ABC):
     def adjoint(self, other):
         pass
 
+
 class Dense(Matrix):
     """
     Class for initial testing of the quantum computer simulator. 
     Also used for testing the performance of the sparse matrix class
     """
 
-    def __init__(self, array, id = ""):
+    def __init__(self, array, id=""):
         """
         Converts a 2D np.ndarray or a Sparse matrix into a dense matrix object.
         """
 
-        if isinstance(array,Sparse):
-            matrix = np.zeros((array.rows, array.cols), dtype = complex)
+        if isinstance(array, Sparse):
+            matrix = np.zeros((array.rows, array.cols), dtype=complex)
             for i in range(len(array.elements)):
-                matrix[array.indices[i,0],array.indices[i,1]] = array.elements[i]
+                matrix[array.indices[i, 0], array.indices[i, 1]] = array.elements[i]
             self.matrix = matrix
             self.rows, self.cols = array.shape
             self.id = id
-        elif isinstance(array,np.ndarray):
+        elif isinstance(array, np.ndarray):
             self.matrix = array
             self.rows, self.cols = array.shape
             self.id = id
         else:
             raise Exception("Input must be a np.ndarray or a Sparse matrix")
-            
-    def __mul__(self, other, id = ""):
+
+    def __mul__(self, other, id=""):
         """
         Matrix multiplication of 2 matrices.
         """
@@ -81,15 +82,13 @@ class Dense(Matrix):
         """
         Kronecker product of two matrices.
         """
-        tensor = np.zeros((self.rows * other.rows, self.cols * other.cols),
-                          dtype=complex)
+        tensor = np.zeros((self.rows * other.rows, self.cols * other.cols), dtype=complex)
 
         for i in range(self.rows):
             for j in range(self.cols):
                 for k in range(other.rows):
                     for l in range(other.cols):
-                        tensor[i * other.rows + k, j * other.cols +
-                               l] = self.matrix[i, j] * other.matrix[k, l]
+                        tensor[i * other.rows + k, j * other.cols + l] = self.matrix[i, j] * other.matrix[k, l]
 
         return Dense(tensor)
 
@@ -97,16 +96,14 @@ class Dense(Matrix):
         """
         Add two matrices. This is needed to ensure that matrices added together are of the same dimension.
         """
-        assert (self.rows == other.rows
-                and self.cols == other.cols), "Matrix dimensions do not match"
+        assert (self.rows == other.rows and self.cols == other.cols), "Matrix dimensions do not match"
         return Dense(self.matrix + other.matrix)
 
     def __sub__(self, other):
         """
         Subtract two matrices. This is needed to ensure that matrices added together are of the same dimension.
         """
-        assert (self.rows == other.rows
-                and self.cols == other.cols), "Matrix dimensions do not match"
+        assert (self.rows == other.rows and self.cols == other.cols), "Matrix dimensions do not match"
         return Dense(self.matrix - other.matrix)
 
     def transpose(self):
@@ -130,7 +127,7 @@ class Dense(Matrix):
                 zero[i, j] = self.matrix[j, i].conjugate()
         id = "" if self.id == "" else self.id + "\u2020"
         return Dense(zero, id)
-        
+
     def scalar(self, scale):
         """
         Multiply a matrix by a scalar
@@ -143,7 +140,9 @@ class Dense(Matrix):
 
 class SparseRep(object):
     """
-    This class exists to distinguish between an array or a sparse matrix when running the constructor for the Sparse matrix class. Also used to return a sparse matrix when multiplying or using the kronecker product for 2 sparse matrices.
+    This class exists to distinguish between an array or a sparse matrix when running the
+    constructor for the Sparse matrix class. Also used to return a sparse matrix when
+    multiplying or using the kronecker product for 2 sparse matrices.
     """
 
     def __init__(self, elements, indices, rows, cols):
@@ -155,7 +154,7 @@ class SparseRep(object):
 
 
 class Sparse(Matrix):
-    """
+    """    
     2D sparse matrix class with entries of type complex
     """
 
@@ -185,8 +184,8 @@ class Sparse(Matrix):
                     if array[i, j] != 0:
                         elements.append(array[i, j])
                         indices.append([i, j])
-            self.elements = np.array(elements, dtype = complex)
-            self.indices = np.array(indices, dtype = int)
+            self.elements = np.array(elements, dtype=complex)
+            self.indices = np.array(indices, dtype=int)
 
         # converts Dense to sparse matrix
         elif isinstance(array, Dense):
@@ -198,8 +197,8 @@ class Sparse(Matrix):
                     if array.matrix[i, j] != 0:
                         elements.append(array.matrix[i, j])
                         indices.append([i, j])
-            self.elements = np.array(elements, dtype = complex)
-            self.indices = np.array(indices, dtype = int)
+            self.elements = np.array(elements, dtype=complex)
+            self.indices = np.array(indices, dtype=int)
 
         # stores sparse representation as sparse matrix
         else:
@@ -209,7 +208,7 @@ class Sparse(Matrix):
             self.cols = array.cols
         self.shape = np.array((self.rows, self.cols))
         self.id = id
-        
+
     def scalar(self, scale):
         """
         Multiplies the matrix by a scalar
@@ -218,7 +217,7 @@ class Sparse(Matrix):
         return Sparse(SparseRep(elements, self.indices, self.rows, self.cols))
 
     def __mul__(self, other):
-        # add multiplication with scalar
+            # add multiplication with scalar
         """
         Matrix multiplication of two sparse matrices
         """
@@ -228,9 +227,9 @@ class Sparse(Matrix):
         # loop through all the elements and mutiply the ones that are in the same row and column
         for i in range(len(self.elements)):
             for j in range(len(other.elements)):
-                if self.indices[i,1] == other.indices[j,0]:
+                if self.indices[i, 1] == other.indices[j, 0]:
                     multiply.append(self.elements[i] * other.elements[j])
-                    m_indices.append([self.indices[i,0],other.indices[j,1]])
+                    m_indices.append([self.indices[i, 0], other.indices[j, 1]])
         # this will give an array that has repeated entries of the same row and column
         # so we need to remove the duplicates and sum the elements
         # lists to store unique sets of indices
@@ -276,7 +275,7 @@ class Sparse(Matrix):
         elements = self.elements.tolist()
         unique = self.indices.tolist()
         other_indices = other.indices.tolist()
-        
+
         for i in range(len(other.elements)):
             if other_indices[i] in unique:
                 ind = unique.index(other_indices[i])
@@ -297,10 +296,9 @@ class Sparse(Matrix):
 
         for i in range(len(self.elements)):
             for j in range(len(other.elements)):
-                kronecker.append(self.elements[i]*other.elements[j])
-                indices.append([self.indices[i,0]*other.rows+other.indices[j,0],
-                                self.indices[i,1]*other.cols+other.indices[j,1]])
-                
+                kronecker.append(self.elements[i] * other.elements[j])
+                indices.append([self.indices[i, 0] * other.rows + other.indices[j, 0], self.indices[i, 1] * other.cols + other.indices[j, 1]])
+
         kronecker = np.array(kronecker)
         indices = np.array(indices)
         return Sparse(SparseRep(kronecker, indices, self.rows * other.rows, self.cols * other.cols))
@@ -310,9 +308,9 @@ class Sparse(Matrix):
         Transpose of a sparse matrix
         """
         indices = []
-        
+
         for i in self.indices:
-            indices.append([i[1],i[0]])
+            indices.append([i[1], i[0]])
         indices = np.array(indices)
         id = "" if self.id == "" else self.id + "\u1D40"
         return Sparse(SparseRep(self.elements, indices, self.cols, self.rows), id)
@@ -324,57 +322,53 @@ class Sparse(Matrix):
         indices = []
 
         for i in self.indices:
-            indices.append([i[1],i[0]])
+            indices.append([i[1], i[0]])
         indices = np.array(indices)
         for ele in self.elements:
             ele = ele.conjugate()
         id = "" if self.id == "" else self.id + "\u2020"
-        return Sparse(SparseRep(self.elements, indices, self.cols, self.rows),id)
-            
+        return Sparse(SparseRep(self.elements, indices, self.cols, self.rows), id)
+
     def __str__(self):
-        matrix = np.zeros((self.rows, self.cols), dtype = complex)
+        matrix = np.zeros((self.rows, self.cols), dtype=complex)
         for i in range(len(self.elements)):
-            matrix[self.indices[i,0],self.indices[i,1]] = self.elements[i]
+            matrix[self.indices[i, 0], self.indices[i, 1]] = self.elements[i]
         return str(matrix)
 
 
-def state(n, m):
-    # fixed so it properly initializes the register and uses Sparse
+# commonly used gates
+I = Dense(np.array([[1, 0], [0, 1]]), id="I")  #Identity
+H = Dense((1 / np.sqrt(2)) * np.array([[1, 1], [1, -1]]), id="H")  #Hadamard
+X = Dense(np.array([[0, 1], [1, 0]]), id="X")  #Pauli X
+Y = Dense(np.array([[0, -1j], [1j, 0]]), id="Y")  #Pauli Y
+Z = Dense(np.array([[1, 0], [0, -1]]), id="Z")  #Pauli Z
+
+def identity(N):
     """
-        Nx1 Matrix state of the quantum register initialised to state corresponding to qubit m
+    NxN identity Matrix object
     """
-    assert isinstance(m, int), "The number of qubits n inputted must be an integer"
-    assert isinstance(n, int), "The qubit to which quantum register is intialised m must be an integer"
-    assert (m >= 0 and m < 2**n), "m must be between 0 and 2^n"
+    I = []
+    for i in range(N):
+        row = [0] * N
+        row[i] = 1
+        I.append(row)
+    return Dense(np.array(I))
 
-    # initialise register to all zeros
-    state = np.zeros((2**n, 1), dtype=complex)
+def phaseshift(theta, id=""):
+    return Dense(np.array([[1, 0], [0, np.exp(1j * theta)]]))
 
-    # initialize to state |m>
-    state[m] = 1
 
-    return Dense(state)
+T = phaseshift(np.pi / 4, id="T")
+S = phaseshift(np.pi / 2, id="S")
 
-# global gates
-I = Dense(np.array([[1, 0], [0, 1]]),id = "I")  # Identity
-H = Dense((1/np.sqrt(2)) * np.array([[1, 1], [1, -1]]), id = "H")  # Hadamard
-X = Dense(np.array([[0, 1], [1, 0]]), id = "X")  # Pauli X 
-Y = Dense(np.array([[0, -1j], [1j, 0]]), id = "Y") # Pauli Y
-Z = Dense(np.array([[1, 0], [0, -1]]), id = "Z") # Pauli Z 
 
-def phaseshift(theta, id = ""):
-    return Dense(np.array([[1, 0], [0, np.exp(1j*theta)]]))
-
-T = phaseshift(np.pi/4, id = "T")
-S = phaseshift(np.pi/2, id = "S")
-
-def CNOT(qubit_count, control_list, target_list, id = ""):
+def CNOT(qubit_count, control_list, target_list, id=""):
     """
     Returns an appropriate CNOT-Type gate for the given qubit count, control and target qubits as a Sparse matrix.
     This gate flips all the target qubits, if all the control qubits are |1>
     Control and Target qubits are zero-indexed and are to be inputted as lists of integers.
     Can also include the "id" argument to give the gate a name.
-    
+
     Example:
     To construct a Toffoli gate for a 3 qubit register, we require 2 control qubits and 1 target qubit.
     Toffoli = CNOT(3, [0,1], [2], id = "Toffoli")
@@ -394,8 +388,8 @@ def CNOT(qubit_count, control_list, target_list, id = ""):
     gate = np.zeros((2**qubit_count, 2**qubit_count), dtype=complex)
 
     # initializes a list to store the indices of the rows
-    rows = np.arange(0,2**qubit_count,1)
-    
+    rows = np.arange(0, 2**qubit_count, 1)
+
     # converts the indices to binary
     bin_rows = []
     for row in rows:
@@ -412,41 +406,99 @@ def CNOT(qubit_count, control_list, target_list, id = ""):
                 counter += 1
         if counter == len(control_list):
             for j in range(len(target_list)):
-                if binary[qubit_count - target_list[j] - 1] == "1":    
+                if binary[qubit_count - target_list[j] - 1] == "1":
                     buffer = list(binary)
                     buffer[qubit_count - target_list[j] - 1] = "0"
                     binary = "".join(buffer)
                 else:
                     buffer = list(binary)
                     buffer[qubit_count - target_list[j] - 1] = "1"
-                    binary = "".join(buffer)  
+                    binary = "".join(buffer)
         bin_swapped_rows.append(binary)
 
     # initializes a list to store the swapped integer indices
     swapped_rows = []
-    
+
     # converts the binary representation of the row indices back to decima
     for binary in bin_swapped_rows:
-        swapped_rows.append(int(binary,2))
+        swapped_rows.append(int(binary, 2))
 
     # sets the appropriate ones in the gate
     for i in range(len(swapped_rows)):
         gate[rows[i], swapped_rows[i]] = 1
-        
-    return Dense(gate,id)
+
+    return Dense(gate, id)
 
 
-class Programmer(object):
+def state(n, m):
+    """
+    Nx1 Matrix state of the quantum register initialised to state corresponding to qubit m
+    """
+    assert (type(n) == int), "The number of qubits n inputted must be an integer"
+    assert (type(m) == int), "The qubit to which quantum register is intialised m must be an integer"
+    assert (m >= 0 and m < 2**n), "m must be between 0 and 2^n"
+
+    # initialise register to all zeros
+    state = np.zeros((2**n, 1), dtype=complex)
+
+    # initialize to state |m>
+    state[m] = 1
+
+    return Dense(state)
+
+
+def measure(state, runs=1000):
+    """
+    Does 'runs' number of measurements of the quantum state and plots the overall probability of measurement
+    """
+
+    #Convert state to a list
+    state = list(state.matrix)
+    result = [0] * len(state)
+
+    for i in range(runs):
+        # Calculate the probabilities of each outcome based on the quantum state
+        probabilities = [abs(coeff)**2 for coeff in state]
+
+        # Perform the measurement probabilistically
+        outcome_index = random.choices(range(len(state)), probabilities)[0]
+
+        # Prepare and return the measurement outcome
+        result[outcome_index] += 1
+
+    #normalise result
+    result = (1 / runs) * np.array(result)
+    result = list(result)
+
+    #plot result
+    figsize = (5, 3)
+
+    # Generate labels for eigenstates
+    eigenvectors = [('Ψ' + '$_{' + str(i) + '}$') for i in range(len(result))] # decimal labels with subscript 
+
+    plt.figure(figsize=figsize)
+    plt.grid(alpha=0.6)
+    plt.ylim(0, 1)
+    plt.bar(eigenvectors, result, color=['blue'], alpha=0.6)
+    plt.xlabel("Eigenstates Ψ")
+    plt.ylabel("Probability of Measurement")
+    plt.title(f'Result for {runs} Measurements')
+
+    plt.show() 
+
+
+class programmer(object):
     """
     Class used to program a quantum circuit. Quantum circut can also be named using the optional argument "name" when initializing the programmer.
     Can visualize the circuit by running print() on the object. Supports visualization of 1 qubit gates only. n-qubit gates can only be visualized by the user assigned id given to the gate.
     It is up to the user to appropriate name their gates.
     To run a circuit, it must be first compiled and then run.
     """
-    def __init__(self, register, name = ""):
+
+    def __init__(self, register, name=""):
         """
         The first argument gives the register of the state the circuit is to be applied to. 
-        
+
         The second argument is optional and can be used to name the circuit.
         """
         self.register = register
@@ -454,7 +506,7 @@ class Programmer(object):
         rows = register.rows
         self.qubit_count = 0
         while True:
-            rows = rows/2
+            rows = rows / 2
             self.qubit_count += 1
             # stops if it reaches 1
             if rows == 1:
@@ -467,8 +519,9 @@ class Programmer(object):
 
         # stores if circuit is compiled or run
         self.compiled = False
-        
-    def add_step(self, gates, step_number = -1):
+        self.measure_state = False
+
+    def add_step(self, gates, step_number=-1):
         """
         Adds a step to the quantum circuit. If no step_number is provided, the step is added to the end of the circuit. 
         Otherwise, it is added to the circuit at the given step_number index.
@@ -484,7 +537,7 @@ class Programmer(object):
         self.steps.insert(step_number, gates)
         # if new step is added, circuit needs to be compiled again
         self.compiled = False
-    
+
     def remove_step(self, step_number):
         """
         Removes a step from the quantum circuit.
@@ -513,7 +566,7 @@ class Programmer(object):
                     gate = gate % step[i + 1]
                 compiled_steps.append(gate)
 
-        # then combines each step into a single matrix 
+        # then combines each step into a single matrix
         circuit = compiled_steps[-1]
         for i in range(len(compiled_steps) - 1):
             circuit = circuit * compiled_steps[len(compiled_steps) - i - 2]
@@ -526,10 +579,12 @@ class Programmer(object):
         """
         if self.compiled:
             self.output = self.circuit * self.register
+            if self.measure_state:
+                measure(self.output)
             return self.output
         else:
             raise Exception("Circuit has not been compiled. Please compile the circuit before running it. \n If you are trying to run after modifying the circuit, you must compile the circuit again")
-    
+
     def get_matrix(self):
         """
         Returns matrix representation of the circuit. Can only be used after the circuit has been compiled.
@@ -539,7 +594,10 @@ class Programmer(object):
         else:
             raise Exception("Circuit has not been compiled. Please compile the circuit before getting the matrix representation.")
 
-        
+    def measure(self, runs = 1000):
+        measure(self.output, runs)
+        self.measure_state = True
+
     def __str__(self):
         """
         Prints a representation of the circuit. Utilizes the id attributes of the gates to print a representation of the circuit.
@@ -550,7 +608,7 @@ class Programmer(object):
             ids = []
             for j in range(len(self.steps[i])):
                 if len(self.steps[i]) == 1:
-                    for _ in range(self.qubit_count-1):
+                    for _ in range(self.qubit_count - 1):
                         ids.append(self.steps[i][j].id)
                 ids.append(self.steps[i][j].id)
             rows.append(ids)
@@ -559,30 +617,20 @@ class Programmer(object):
         # Prepares the string to be printed
         buffer = "Quantum Circuit " + self.name + ":\n"
         for i in range(self.qubit_count):
-            buffer += "q" + str(i) + " -> "
+            buffer += "q" + str(i).ljust(4," ") + " -> "
             for j in range(len(self.steps)):
                 if len(self.steps[j]) == 1:
-                    buffer += "[" + self.steps[j][0].id.center(widths[j]) + "]" + "---"
+                    buffer += "[" + self.steps[j][0].id.center(
+                        widths[j]) + "]" + "---"
                 elif self.steps[j][i].id == "I":
-                    for _ in range(widths[j]+5):
-                        buffer += "-" 
+                    for _ in range(widths[j] + 5):
+                        buffer += "-"
                 else:
-                    buffer += "[" + self.steps[j][i].id.center(widths[j]) + "]" + "---"
+                    buffer += "[" + self.steps[j][i].id.center(
+                        widths[j]) + "]" + "---"
+            if self.measure_state:
+                buffer += "[Measure]"
             buffer += "\n"
-                
+
         return buffer
 
-# SIIICK IT WORKS I THINK
-# wikipedia_toff = CNOT(4,[0,2],[1], id = "Toffoli")
-# #print(wikipedia_toff)
-# q = Programmer(state(3,0), name = "Grovers")
-# q.add_step([H,H,H])
-# # searching for qubit 2
-# Oracle = I%I%I - (state(3,2) * (state(3,2).transpose()).scalar(2))
-# Oracle.id = "Oracle"
-# q.add_step([Oracle])
-# print(q)
-# q.compile()
-# q.run()
-# print(q.get_matrix())
-# print(q.output)

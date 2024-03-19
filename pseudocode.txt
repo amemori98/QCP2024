@@ -79,77 +79,14 @@ function general_grovers_algorithm()
     H_n = nxn_matrix_gate(H, n)
     n_q_state = apply_nxn_gate_to_qr(H_n, n_q_state)
     I_n = identity(N)
-    no_of_iterations = N if n == 3 else sqrt(N)
+    no_of_iterations = (pi/4) * sqrt(N)
     O = I_n - 2 * target_state * target_state.transpose()
+    D = I_n - 2 * initial_state * initial_state.transpose()
     repeat no_of_iterations times:
         initial_state = n_q_state
         n_q_state = O * n_q_state
-        D = I_n - 2 * initial_state * initial_state.transpose()
         n_q_state = D * n_q_state
     print final state of quantum register
 
 # Main program
-- Call general_grovers_algorithm() function
-
-
-
-I made it very non technical to kinda see the structure, feel free to make it more technical or even start making it. The State class is already started.
-
-checklist and things to implement (Jordi):
-    Shors
-    documentation on existing classes(WIP)
-    X add T and S gates
-    x add adjoint methods for matrices
-    work on shors part of report and performance testing
-    need to combine all code in 1 file
-
-class lazy:  \\not entirely sure how this would tie in with the rest
-	makes a function lazy  \\maybe not needed, sparse matrix class might already be lazy
-	https://stackoverflow.com/questions/7151890/python-lazy-variables-or-delayed-expensive-computation
-
-class sparse_matrix:  
-\\array of non-zero diagonals to represent the matrix, the longest non-zero diagonal would be the main diagonal and the position of the other diagonals could be 
-	
-
-# pseudocode Elena
-
-class Quantum State:
-
-Functions:
-- Initializer: no_of_qubits, state
-
-(gates)
-- Hadamard, phase shift, c-NOT (forms a universal set of gates), could also do (H + c-V)
-
-(tensor products)
-- Qubit tensor product, matrix vector product
-
-(circuit model - apply gates to quantum register which is the tensor product of qubits)
-
-need to also implement grover's algorithm (searches a superposition of 2^n states + produces a state close to one flipped by oracle - a reflection in direction of unknown state phi, oracle is the gate R_phi = 1 - 2*projection of phi)
-
-
-
-
-\\ pseudocode for grovers algorithm 
-
-function grovers_algorithm(num_qubits, ...)
-  initialise qubits - create a superposition of all states 's'
-  s = state from applying hadamard to all qubits
-   
-  repeat until reach target w:
-    reflect about s' axis (oracle circuit)
-    
-    reflect about s axis (diffusion operator)
-  end repeat
-  
-  measure final state
-  
-  show visualisation:
-    print initial state (as bloch spheres?)
-    print final state 
-    
-
-function oracle_circuit:
-
-function diffusion_operator:
+- Call grovers_algorithm() function
