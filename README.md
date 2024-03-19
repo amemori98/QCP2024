@@ -6,7 +6,16 @@
 
 ---
 
-<p align="center"> This a program which allows you to simulate a quantum computer and make quantum circuits and algorithms 
+<h3 align="center">Jordi Zhang,
+Elena Espinosa,
+Alexandra McAdam,
+Taewoo Lee,
+Kathryn Griggs,
+Matilda Lawton </h3>
+
+---
+
+<p align="center"> This a program which allows you to simulate a quantum computer and make quantum circuits and algorithms. In algorithms.py there is an implemntation of Grover's algorithm which uses the simulator.
     <br> 
 </p>
 
@@ -90,7 +99,7 @@ print(circuit.output)
 
 
 ### Gates Included
-When adding gates to a circuit use their id to name them. For example the id for Hadamard gate id="H" so you use circuit.add_step([H,H,H]).
+When adding gates to a circuit use their id. For example the id for Hadamard gate is "H" so you write circuit.add_step([H,H,H]).
 
 | Gate Name        | id |
 | ---------------- | -- |
@@ -133,14 +142,5 @@ Adjoint: adjoint = matrix.adjoint() where matrix is a Matrix object
 
 Scalar multiplication: matrix.scalar(x) where matrix is a Matrix object, and x is a scalar number 
 
-
-
-## Authors <a name = "authors"></a>
-Jordi Zhang,
-Elena Espinosa,
-Alexandra McAdam,
-Taewoo Lee,
-Kathryn Griggs,
-Matilda Lawton.
 
 
