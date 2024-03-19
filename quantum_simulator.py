@@ -487,9 +487,9 @@ def measure(state, runs=1000):
     plt.show() 
 
 
-class programmer(object):
+class Programmer(object):
     """
-    Class used to program a quantum circuit. Quantum circut can also be named using the optional argument "name" when initializing the programmer.
+    Class used to program a quantum circuit. Quantum circut can also be named using the optional argument "name" when initializing the Programmer.
     Can visualize the circuit by running print() on the object. Supports visualization of 1 qubit gates only. n-qubit gates can only be visualized by the user assigned id given to the gate.
     It is up to the user to appropriate name their gates.
     To run a circuit, it must be first compiled and then run.

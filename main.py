@@ -14,7 +14,7 @@ def grovers_algorithm():
 
     n_q_state = state(n, 0)  # initialised to zero
 
-    q = programmer(n_q_state, name=f"Grovers {n} Qubits")
+    q = Programmer(n_q_state, name=f"Grovers {n} Qubits")
 
     q.add_step([H]*n)
     q.compile()
@@ -63,7 +63,7 @@ def shors_algorithm(number):
     peri_qubit_count = 2*comp_qubit_count
     
     register = state(peri_qubit_count,0)
-    shors = programmer(register, name = "Shors algorithm")
+    shors = Programmer(register, name = "Shors algorithm")
     shors.add_step([H]*peri_qubit_count)
     print(shors)
     shors.compile()
