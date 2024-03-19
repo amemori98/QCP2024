@@ -2,7 +2,7 @@
   <a href="addlinktopage" rel="noopener">
 </p>
 
-<h3 align="center">Quantum Computing Simulator Project</h3>
+<h3 align="center">Quantum Computing Project</h3>
 
 ---
 
@@ -15,7 +15,7 @@ Matilda Lawton </h3>
 
 ---
 
-<p align="center"> This a program which allows you to simulate a quantum computer and make quantum circuits and algorithms. In algorithms.py there is an implemntation of Grover's algorithm which uses the simulator.
+<p align="center"> This program simulates quantum computation on a classical computer. You can build and run quantum circuits and algorithms. 
     <br> 
 </p>
 
@@ -29,8 +29,10 @@ Matilda Lawton </h3>
 
 ## Getting Started <a name = "getting_started"></a>
 
-### Prerequisites
-This program is self contained and uses matplotlib for plotting graphs. 
+### Introduction
+The simulator is self contained and uses matplotlib for plotting graphs. The simulator has 2 classes, Programmer and Matrix. Programmer is used to build and run quantum circuits and Matrix handles matrix storage and matrix algebra. 
+
+In algorithms.py there is an implementation of Grover's algorithm which uses the simulator.
 
 ### Installing
 This program can be used by downloading the file quantum_simulator.py and importing into your file:
@@ -52,7 +54,7 @@ qregister = state(3, 0)
 Creating a quantum circuit:
 
 ```
-circuit = programmer(qregister, name="my_first_circuit")
+circuit = Programmer(qregister, name="my_first_circuit")
 ```
 
 Applying Hadamard gates to each of the qubits in the circuit:
@@ -121,7 +123,12 @@ identity(N, id) -> returns an NxN identity matrix as a Matrix object with given 
 
 CNOT(qubit_count, control_list, target_list, id) -> returns a CNOT matrix with the given control and target qubits as a Matrix object with given id
 
-To make your own gate use the Matrix 
+To make your own gate using the Matrix class:
+```
+X = Dense(np.array([[0, 1], [1, 0]]), id="X")  
+```
+This makes the Pauli X gate as a Dense matrix.
+
 
 ### Matrix Algebra 
 You can apply matrix algebra to states and gates. 
@@ -136,9 +143,9 @@ Matrix addition: use + operator
 
 Matrix subtraction: use - operator 
 
-Transpose: transpose = matrix.tensor() where matrix is a Matrix object 
+Transpose: matrix.tensor() where matrix is a Matrix object 
 
-Adjoint: adjoint = matrix.adjoint() where matrix is a Matrix object 
+Adjoint: matrix.adjoint() where matrix is a Matrix object 
 
 Scalar multiplication: matrix.scalar(x) where matrix is a Matrix object, and x is a scalar number 
 
