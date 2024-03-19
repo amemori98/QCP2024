@@ -27,7 +27,7 @@ A python progrom to simulate quantum computing on a classical computer. -->
 This program is self contained and uses matplotlib for plotting graphs.
 
 ### Installing
-This program can be used by downloading the file quantumsimulator.py and importing into your file:
+This program can be used by downloading the file quantum_simulator.py and importing into your file:
 
 ```
 from quantum_simulator import *
@@ -67,21 +67,21 @@ Measure the state of the quantum register and plot the resuts:
 ```
 circuit.measure()
 ```
-![graph](./measureplot.png) 
+![graph](./docs/measureplot.png) 
 
 
 Print a visualisation of the circuit:
 ```
 print(circuit)
 ```
-![graph](./visualcircuit.png) 
+![graph](./docs/visualcircuit.png) 
 
 
 Print the gates as a matrix:
 ```
 print(circuit.get_matrix())
 ```
-![graph](./matrixcircuit.png) 
+![graph](./docs/matrixcircuit.png) 
 
 
 Print the amplitudes of the quantum register:
@@ -89,7 +89,7 @@ Print the amplitudes of the quantum register:
 print(circuit.output)
 
 ```
-![graph](./amplitudes.png) 
+![graph](./docs/amplitudes.png) 
 
 
 ## Authors <a name = "authors"></a>
