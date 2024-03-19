@@ -1,6 +1,9 @@
 from quantum_simulator import *
 
 def grovers_algorithm():
+    """
+    Uses quantum simulator program to implement Grover's algorithm on n qubits for a given target state
+    """
 
     n = int(input("Enter integer number of qubits for quantum register: "))
     N = 2**n  # no of basis states
@@ -43,22 +46,8 @@ def grovers_algorithm():
     print(q)
     print(f"Final state of the quantum register: \n {q.output}")
 
+# the function below attempts the implementation of Shor's algorithm. However at the moment it DOES NOT WORK.
 def shors_algorithm(number):
-    # https://arxiv.org/pdf/1804.03719.pdf
-    # https://arxiv.org/pdf/1903.00768.pdf
-    # https://www.science.org/doi/epdf/10.1126/science.aad9480
-    # https://arxiv.org/pdf/1207.0511.pdf
-    # https://arxiv.org/pdf/1706.08061.pdf
-    # https://arxiv.org/pdf/1611.07995.pdf
-    # https://arxiv.org/pdf/quant-ph/0205095.pdf
-    # https://cs.stackexchange.com/questions/72439/matrix-for-modular-exponentiation-in-shors-algorithm
-    # https://bobbycorpus.wordpress.com/2019/10/28/constructing-the-quantum-fourier-circuit/
-    # https://github.com/mett29/Shor-s-Algorithm/blob/master/Shor.ipynb
-    # https://www.science.org/doi/10.1126/science.aad9480
-    # there is a method using basically an oracle gate, but this is incredibly stupid because its basically
-    # calculating the modular exponentiation first then converting it into a gate, which literally defeats
-    # the whole purpose of shors algorithm because by calculating said oracle, u would already calculate
-    # the period that shors would normally calculate. Its circular reasoning
     comp_qubit_count = len(bin(number-1)[2:])
     peri_qubit_count = 2*comp_qubit_count
     
@@ -69,6 +58,3 @@ def shors_algorithm(number):
     shors.compile()
     shors.run()
     shors.measure()
-
-    
-#shors_algorithm(15)
